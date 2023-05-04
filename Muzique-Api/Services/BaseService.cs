@@ -6,7 +6,7 @@ namespace Muzique_Api.Services
 {
     public class BaseService
     {
-        private const string _connectionString = "Server=127.0.0.1; User ID=root; Password=; Database=muzique";
+        private const string _connectionString = "Server=127.0.0.1; User ID=root; Password=; Database=muzique;Convert Zero Datetime=True; Allow User Variables=true";
         protected IDbConnection _connection;
         public BaseService() {
             this._connection = new MySqlConnection(_connectionString);
