@@ -22,21 +22,20 @@ namespace Muzique_Api.Services
             }
             SongViewModel songViewModel = new SongViewModel();
             songViewModel.ListSong = new List<Song>();
-            songViewModel.TotalPage = 0;
+            songViewModel.TotalRes = 0;
             int totalRows = this._connection.Query<int>(queryCount + query, new { keyword = keyword }).FirstOrDefault();
             if (totalRows > 0)
             {
-                songViewModel.TotalPage = (int)Math.Ceiling((decimal)totalRows / rowperpage);
+                songViewModel.TotalRes = totalRows;
             }
             if (page == 0)
             {
                 page = 1;
             }
             int pageOffSet = (page - 1) * rowperpage;
-            if(rowperpage < 0)
+            if(rowperpage <= 0)
             {
                 query += " order by createdAt desc";
-                songViewModel.TotalPage = 1;
             } else
             {
                 query += " order by createdAt desc limit " + pageOffSet + "," + rowperpage;
@@ -46,38 +45,33 @@ namespace Muzique_Api.Services
             return songViewModel;
         }
 
-        public Song GetSongById(string id, IDbTransaction transaction = null)
+        public Song GetSongById(int id, IDbTransaction transaction = null)
         {
             string query = "select * from `song` where songId = @id";
             return this._connection.Query<Song>(query, new { id }, transaction).FirstOrDefault();
         }
 
-        public bool DeleteSong(string id, IDbTransaction transaction = null)
+        public bool DeleteSong(int id, IDbTransaction transaction = null)
         {
             string delete = "DELETE FROM `song` WHERE songID = @id";
             int status = this._connection.Execute(delete, new { id = id }, transaction);
             return status > 0;
         }
 
-        public object GetSongDetail(string id)
+        public SongDetail GetSongDetail(int id , IDbTransaction transaction = null)
         {
             string querySong = "select * from `song` where songId = @id";
             string queryArtist = "select artistId from `song_and_artist` where songId=@id";
             string queryGenre = "select genreId from `song_and_genre` where songId=@id";
             string queryPlaylist = "select playlistId from `song_and_playlist` where songId=@id";
 
-            object Song = this._connection.Query<object>(querySong, new { id }).FirstOrDefault();
-            List<int> listArtist = this._connection.Query<int>(queryArtist, new { id }).ToList();
-            List<int> listGenre = this._connection.Query<int>(queryGenre, new { id }).ToList();
-            List<int> listPlaylist = this._connection.Query<int>(queryPlaylist, new { id }).ToList();
+            SongDetail songDetail = new SongDetail();
+            songDetail.Song = this._connection.Query<Song>(querySong, new { id },transaction).FirstOrDefault();
+            songDetail.listArtistId = this._connection.Query<int>(queryArtist, new { id },transaction).ToList();
+            songDetail.listGenreId = this._connection.Query<int>(queryGenre, new { id },transaction).ToList();
+            songDetail.listPlaylistId = this._connection.Query<int>(queryPlaylist, new { id },transaction).ToList();
 
-            return new
-            {
-                Song = Song,
-                listArtistId = listArtist,
-                listGenreId = listGenre,
-                listPlaylistId = listPlaylist
-            };
+            return songDetail;
         }
 
         public bool InsertSong(Song model, IDbTransaction transaction = null)
@@ -88,9 +82,13 @@ namespace Muzique_Api.Services
             return status > 0;
         }
 
+        public int GetLastSongID(IDbTransaction transaction = null)
+        {
+            string query = "SELECT max(songId) from `song`";
+            return this._connection.Query<int>(query,transaction: transaction).FirstOrDefault();
+        }
         public bool InsertSongArtist(SongAndArtist model, IDbTransaction transaction = null)
         {
-            string id = model.songId;
             string insert = "INSERT INTO `song_and_artist`(`songAndArtistId`, `songId`, `artistId`, `createdAt`)" +
                 " VALUES (null,@songId,@artistId,@createAt)";
             int status = this._connection.Execute(insert, model, transaction);
@@ -113,21 +111,21 @@ namespace Muzique_Api.Services
             return status > 0;
         }
 
-        public bool DeleteSongArtist(string id, IDbTransaction transaction = null)
+        public bool DeleteSongArtist(int id, IDbTransaction transaction = null)
         {
             string delete = "DELETE FROM `song_and_artist` WHERE songID = @id";
             int status = this._connection.Execute(delete, new { id = id }, transaction);
             return status > 0;
         }
 
-        public bool DeleteSongGenre(string id, IDbTransaction transaction = null)
+        public bool DeleteSongGenre(int id, IDbTransaction transaction = null)
         {
             string delete = "DELETE FROM `song_and_genre` WHERE songID = @id";
             int status = this._connection.Execute(delete, new { id = id }, transaction);
             return status > 0;
         }
 
-        public bool DeleteSongPlaylist(string id, IDbTransaction transaction = null)
+        public bool DeleteSongPlaylist(int id, IDbTransaction transaction = null)
         {
             string delete = "DELETE FROM `song_and_playlist` WHERE songID = @id";
             int status = this._connection.Execute(delete, new { id = id }, transaction);

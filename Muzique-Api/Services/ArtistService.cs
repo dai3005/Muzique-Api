@@ -22,11 +22,11 @@ namespace Muzique_Api.Services
             }
             ArtistViewModel artistViewModel = new ArtistViewModel();
             artistViewModel.ListArtist = new List<Artist>();
-            artistViewModel.TotalPage = 0;
+            artistViewModel.TotalRes = 0;
             int totalRows = this._connection.Query<int>(queryCount + query, new { keyword = keyword }).FirstOrDefault();
             if (totalRows > 0)
             {
-                artistViewModel.TotalPage = (int)Math.Ceiling((decimal)totalRows / rowperpage);
+                artistViewModel.TotalRes = totalRows;
             }
             if (page == 0)
             {
@@ -36,7 +36,6 @@ namespace Muzique_Api.Services
             if (rowperpage < 0)
             {
                 query += " order by createdAt desc";
-                artistViewModel.TotalPage = 1;
             }
             else
             {
@@ -53,11 +52,33 @@ namespace Muzique_Api.Services
             return this._connection.Query<Artist>(query, new { id },transaction).FirstOrDefault();
         }
 
-        public bool InsertArtist(Artist model, IDbTransaction transaction = null)
+        public bool InsertArtist(Artist model)
         {
-            string insert = "INSERT INTO `artist`(`artistId`, `name`, `description`, `coverImageUrl`, `createdAt`, `updatedAt`, `nameSearch`)" +
-                " VALUES ('[value-1]','[value-2]','[value-3]','[value-4]','[value-5]','[value-6]','[value-7]')";
-            int status = this._connection.Execute(insert, model, transaction);
+            string insert = "INSERT INTO `artist`(`artistId`, `name`, `description`, `coverImageUrl`, `createdAt`, `nameSearch`)" +
+                " VALUES (null,@name,@description,@coverImageUrl,@createdAt,@nameSearch)";
+            int status = this._connection.Execute(insert, model);
+            return status > 0;
+        }
+
+        public bool UpdateArtist(Artist model)
+        {
+            string query = "UPDATE `artist` SET `name`=@name,`description`=@description,`coverImageUrl`=@coverImageUrl" +
+                ",`updatedAt`=@updatedAt,`nameSearch`=@nameSearch WHERE artistId = @artistId";
+            int status = this._connection.Execute(query, model);
+            return status > 0;
+        }
+
+        public bool DeleteArtist(int id, IDbTransaction transaction = null)
+        {
+            string delete = "DELETE FROM `artist` WHERE artistId = @id";
+            int status = this._connection.Execute(delete, new { id = id }, transaction);
+            return status > 0;
+        }
+
+        public bool DeleteArtistSong(int id, IDbTransaction transaction = null)
+        {
+            string delete = "DELETE FROM `song_and_artist` WHERE artistId = @id";
+            int status = this._connection.Execute(delete, new { id = id }, transaction);
             return status > 0;
         }
     }

@@ -14,6 +14,6 @@
     public class ArtistViewModel
     {
         public List<Artist> ListArtist { get; set; }
-        public int TotalPage { get; set; }
+        public int TotalRes { get; set; }
     }
 }

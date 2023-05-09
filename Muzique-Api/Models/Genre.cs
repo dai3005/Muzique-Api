@@ -14,6 +14,6 @@
     public class GenreViewModel
     {
         public List<Genre> ListArtist { get; set; }
-        public int TotalPage { get; set; }
+        public int TotalRes { get; set; }
     }
 }

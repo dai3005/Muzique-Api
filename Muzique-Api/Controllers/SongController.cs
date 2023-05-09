@@ -22,7 +22,7 @@ namespace Muzique_Api.Controllers
         }
 
         [HttpGet("/getListSong")]
-        public ActionResult Get(int page, int rowperpage, string? keyword = "")
+        public IActionResult Get(int page, int rowperpage, string? keyword = "")
         {
             try
             {
@@ -37,7 +37,7 @@ namespace Muzique_Api.Controllers
         }
 
         [HttpGet("/getSongById")]
-        public ActionResult GetSongById(string id)
+        public IActionResult GetSongById(int id)
         {
             try
             {
@@ -52,7 +52,7 @@ namespace Muzique_Api.Controllers
         }
 
         [HttpGet("/getSongDetail")]
-        public ActionResult GetSongDetail(string id)
+        public IActionResult GetSongDetail(int id)
         {
             try
             {
@@ -67,7 +67,7 @@ namespace Muzique_Api.Controllers
         }
 
         [HttpPost("/createSong")]
-        public ActionResult Post(SongModel model)
+        public IActionResult Post(SongModel model)
         {
             try
             {
@@ -79,7 +79,7 @@ namespace Muzique_Api.Controllers
                         SongService songService = new SongService(connect);
 
                         Song song = new Song();
-                        song.songId = Guid.NewGuid().ToString();
+
                         song.name = model.name;
                         song.description = model.description;
                         song.audioUrl = model.audioUrl;
@@ -87,6 +87,9 @@ namespace Muzique_Api.Controllers
                         song.albumId = model.albumId;
                         song.createdAt = DateTime.Now;
                         song.nameSearch = model.nameSearch;
+                        if (!songService.InsertSong(song, transaction)) return StatusCode(500, "Lỗi khi thêm bài hát");
+
+                        int songId = songService.GetLastSongID(transaction);
 
                         if (model.listArtist.Length > 0)
                         {
@@ -98,17 +101,17 @@ namespace Muzique_Api.Controllers
 
                                 SongAndArtist songAndArtist = new SongAndArtist();
                                 songAndArtist.artistId = id;
-                                songAndArtist.songId = song.songId;
+                                songAndArtist.songId = songId;
                                 songAndArtist.createdAt = DateTime.Now;
 
-                                if (!songService.InsertSongArtist(songAndArtist, transaction)) return StatusCode(500,"Lỗi ca sĩ");
-                                
+                                if (!songService.InsertSongArtist(songAndArtist, transaction)) return StatusCode(500, "Lỗi ca sĩ");
+
                             }
                         }
 
                         if (model.listPlaylist.Length > 0)
                         {
-                            foreach(var id in model.listPlaylist)
+                            foreach (var id in model.listPlaylist)
                             {
                                 PlaylistService playlistService = new PlaylistService(connect);
                                 Playlist playlist = playlistService.GetPlaylistDetail(id, transaction);
@@ -116,7 +119,7 @@ namespace Muzique_Api.Controllers
 
                                 SongAndPlaylist songAndPlaylist = new SongAndPlaylist();
                                 songAndPlaylist.playlistId = id;
-                                songAndPlaylist.songId = song.songId;
+                                songAndPlaylist.songId = songId;
                                 songAndPlaylist.createdAt = DateTime.Now;
 
                                 if (!songService.InsertSongPlaylist(songAndPlaylist, transaction)) return StatusCode(500, "Lỗi playlist");
@@ -133,20 +136,18 @@ namespace Muzique_Api.Controllers
 
                                 SongAndGenre songAndGenre = new SongAndGenre();
                                 songAndGenre.genreId = id;
-                                songAndGenre.songId = song.songId;
+                                songAndGenre.songId = songId;
                                 songAndGenre.createdAt = DateTime.Now;
 
                                 if (!songService.InsertSongGenre(songAndGenre, transaction)) return StatusCode(500, "Lỗi thể loại");
                             }
                         }
 
-                        if(!songService.InsertSong(song, transaction)) return StatusCode(500,"Lỗi khi thêm bài hát");
-
                         transaction.Commit();
 
                         return Ok();
                     }
-                }       
+                }
             }
             catch (Exception ex)
             {
@@ -155,7 +156,7 @@ namespace Muzique_Api.Controllers
         }
 
         [HttpDelete("/deleteSong")]
-        public ActionResult Delete(string id)
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {
@@ -166,15 +167,20 @@ namespace Muzique_Api.Controllers
                     {
                         SongService songService = new SongService(connect);
 
-                        Song song = songService.GetSongById(id,transaction);
+                        Song song = songService.GetSongById(id, transaction);
                         if (song == null) return NotFound();
+
+                        SongDetail songDetail = songService.GetSongDetail(id, transaction);
 
                         if (!songService.DeleteSongArtist(id, transaction)) return StatusCode(500, "Lỗi khi xoá ca sĩ");
                         if (!songService.DeleteSongGenre(id, transaction)) return StatusCode(500, "Lỗi khi xoá thể loại");
-                        if (!songService.DeleteSongPlaylist(id, transaction)) return StatusCode(500, "Lỗi khi xoá playlist");
+                        if(songDetail.listPlaylistId.Count > 0)
+                        {
+                            if (!songService.DeleteSongPlaylist(id, transaction)) return StatusCode(500, "Lỗi khi xoá playlist");
+                        }        
 
-                        _deleteFile.DeleteFileAsync(song.coverImageUrl);
-                        _deleteFile.DeleteFileAsync(song.audioUrl);
+                        await _deleteFile.DeleteFileAsync(song.coverImageUrl);
+                        await _deleteFile.DeleteFileAsync(song.audioUrl);
 
                         if (!songService.DeleteSong(id, transaction)) return StatusCode(500, "Lỗi khi xoá bài hát");
 

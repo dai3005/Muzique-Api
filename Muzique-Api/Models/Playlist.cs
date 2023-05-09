@@ -9,13 +9,13 @@
         public string coverImageUrl { get; set; }
         public DateTime? createdAt { get; set; }
         public DateTime? updatedAt { get; set; }
-
+        public string type { get; set; }
         public int userId { get; set; }
     }
 
     public class PlaylistViewModel
     {
         public List<Playlist> ListPlaylist { get; set; }
-        public int TotalPage { get; set; }
+        public int TotalRes { get; set; }
     }
 }

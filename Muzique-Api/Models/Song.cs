@@ -7,7 +7,7 @@ namespace Muzique_Api.Models
 {
     public class Song
     {
-        public string songId { get; set; }
+        public int songId { get; set; }
         public string name { get; set; }
         public string nameSearch { get; set; }
         public string audioUrl { get; set; }
@@ -21,7 +21,7 @@ namespace Muzique_Api.Models
     public class SongViewModel
     {
         public List<Song> ListSong { get; set; }
-        public int TotalPage { get; set; }
+        public int TotalRes { get; set; }
     }
 
     public class SongModel : Song
@@ -29,5 +29,13 @@ namespace Muzique_Api.Models
         public int[] listArtist { get; set; }
         public int[] listGenre  { get; set; }
         public int[] listPlaylist { get; set; }
+    }
+
+    public class SongDetail
+    {
+        public Song Song { get; set; }
+        public List<int> listArtistId { get; set; }
+        public List<int> listGenreId { get; set; }
+        public List<int> listPlaylistId { get; set; }
     }
 }

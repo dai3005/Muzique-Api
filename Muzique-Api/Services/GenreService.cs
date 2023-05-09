@@ -22,11 +22,11 @@ namespace Muzique_Api.Services
             }
             GenreViewModel genreViewModel = new GenreViewModel();
             genreViewModel.ListArtist = new List<Genre>();
-            genreViewModel.TotalPage = 0;
+            genreViewModel.TotalRes = 0;
             int totalRows = this._connection.Query<int>(queryCount + query, new { keyword = keyword }).FirstOrDefault();
             if (totalRows > 0)
             {
-                genreViewModel.TotalPage = (int)Math.Ceiling((decimal)totalRows / rowperpage);
+                genreViewModel.TotalRes = totalRows;
             }
             if (page == 0)
             {
@@ -36,7 +36,6 @@ namespace Muzique_Api.Services
             if (rowperpage < 0)
             {
                 query += " order by createdAt desc";
-                genreViewModel.TotalPage = 1;
             }
             else
             {
@@ -51,6 +50,36 @@ namespace Muzique_Api.Services
         {
             string query = "select * from `genre` where genreId = @id";
             return this._connection.Query<Genre>(query, new { id }, transaction).FirstOrDefault();
+        }
+
+        public bool InsertGenre(Genre model)
+        {
+            string insert = "INSERT INTO `genre`(`genreId`, `name`, `description`, `coverImageUrl`, `createdAt`, `nameSearch`)" +
+                " VALUES (null,@name,@description,@coverImageUrl,@createdAt,@nameSearch)";
+            int status = this._connection.Execute(insert, model);
+            return status > 0;
+        }
+
+        public bool UpdateGenre(Genre model)
+        {
+            string query = "UPDATE `genre` SET `name`=@name,`description`=@description,`coverImageUrl`=@coverImageUrl" +
+                ",`updatedAt`=@updatedAt,`nameSearch`=@nameSearch WHERE genreId = @genreId";
+            int status = this._connection.Execute(query, model);
+            return status > 0;
+        }
+
+        public bool DeleteGenre(int id, IDbTransaction transaction = null)
+        {
+            string delete = "DELETE FROM `genre` WHERE genreId = @id";
+            int status = this._connection.Execute(delete, new { id = id }, transaction);
+            return status > 0;
+        }
+
+        public bool DeleteGenreSong(int id, IDbTransaction transaction = null)
+        {
+            string delete = "DELETE FROM `song_and_genre` WHERE genreId = @id";
+            int status = this._connection.Execute(delete, new { id = id }, transaction);
+            return status > 0;
         }
     }
 }
