@@ -1,19 +1,20 @@
 ﻿namespace Muzique_Api.Models
 {
-    public class Artist
+    public class Album
     {
-        public int artistId { get; set; }
+        public int albumId { get; set; }
         public string name { get; set; }
         public string nameSearch { get; set; }
         public string description { get; set; }
         public string coverImageUrl { get; set; }
+        public int artistId { get; set; }
         public DateTime? createdAt { get; set; }
         public DateTime? updatedAt { get; set; }
     }
 
-    public class ArtistViewModel
+    public class AlbumViewModel
     {
-        public List<Artist> ListData { get; set; }
+        public List<Album> ListData { get; set; }
         public int TotalRes { get; set; }
     }
 }

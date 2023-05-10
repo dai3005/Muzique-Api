@@ -15,7 +15,7 @@
 
     public class PlaylistViewModel
     {
-        public List<Playlist> ListPlaylist { get; set; }
+        public List<Playlist> ListData { get; set; }
         public int TotalRes { get; set; }
     }
 }

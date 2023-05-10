@@ -16,6 +16,7 @@ namespace Muzique_Api.Models
         public int? albumId { get; set; }
         public DateTime? createdAt { get; set; }
         public DateTime? updatedAt { get;set; }
+        public string? albumname { get; set; }
     }
 
     public class SongViewModel

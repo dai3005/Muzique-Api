@@ -83,6 +83,7 @@ namespace Muzique_Api.Controllers
                 artist.nameSearch = model.nameSearch;
                 artist.description = model.description;
                 artist.updatedAt = DateTime.Now;
+                artist.coverImageUrl = model.coverImageUrl;
 
                 if (!string.IsNullOrEmpty(model.coverImageUrl))
                 {

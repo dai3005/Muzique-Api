@@ -13,7 +13,7 @@
 
     public class GenreViewModel
     {
-        public List<Genre> ListArtist { get; set; }
+        public List<Genre> ListData { get; set; }
         public int TotalRes { get; set; }
     }
 }

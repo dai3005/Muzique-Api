@@ -60,7 +60,7 @@ namespace Muzique_Api.Services
 
         public SongDetail GetSongDetail(int id , IDbTransaction transaction = null)
         {
-            string querySong = "select * from `song` where songId = @id";
+            string querySong = "select s.*, a.name as albumName from `song` s left join `album` a on s.albumId = a.albumId where songId = @id";
             string queryArtist = "select artistId from `song_and_artist` where songId=@id";
             string queryGenre = "select genreId from `song_and_genre` where songId=@id";
             string queryPlaylist = "select playlistId from `song_and_playlist` where songId=@id";
@@ -79,6 +79,14 @@ namespace Muzique_Api.Services
             string insert = "INSERT INTO `song`(`songId`,`name`, `audioUrl`, `description`, `coverImageUrl`, `albumId`, `createdAt`, `nameSearch`)" +
                 " VALUES (@songId,@name,@audioUrl,@description,@coverImageUrl,@albumId,@createdAt, @nameSearch)";
             int status = this._connection.Execute(insert, model,transaction);
+            return status > 0;
+        }
+
+        public bool UpdateSong(Song model, IDbTransaction transaction = null)
+        {
+            string query = "UPDATE `song` SET `name`=@name,`audioUrl`=@audioUrl,`description`=@description,`coverImageUrl`=@coverImageUrl," +
+                "`albumId`=albumId,`updatedAt`=@updatedAt,`nameSearch`=@nameSearch WHERE songId = @songId";
+            int status = this._connection.Execute(query, model);
             return status > 0;
         }
 

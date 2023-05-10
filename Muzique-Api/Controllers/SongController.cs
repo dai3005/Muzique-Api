@@ -155,6 +155,44 @@ namespace Muzique_Api.Controllers
             }
         }
 
+        [HttpPut("/updateSong")]
+        public async Task<IActionResult> UpdateSong(Song model)
+        {
+            try
+            {
+                SongService songService = new SongService();
+                Song song = songService.GetSongById(model.songId);
+                if (song == null) return StatusCode(500, "Bài hát không tồn tại");
+
+                song.name = model.name;
+                song.nameSearch = model.nameSearch;
+                song.description = model.description;
+                song.updatedAt = DateTime.Now;
+                song.albumId = model.albumId;
+
+                if (!string.IsNullOrEmpty(model.coverImageUrl))
+                {
+                    await _deleteFile.DeleteFileAsync(song.coverImageUrl);
+
+                    song.coverImageUrl = model.coverImageUrl;
+                }
+
+                if (!string.IsNullOrEmpty(model.audioUrl))
+                {
+                    await _deleteFile.DeleteFileAsync(song.audioUrl);
+
+                    song.coverImageUrl = model.audioUrl;
+                }
+
+                if (!songService.UpdateSong(song)) return StatusCode(500, "Lỗi khi sửa Bài hát");
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
         [HttpDelete("/deleteSong")]
         public async Task<IActionResult> Delete(int id)
         {

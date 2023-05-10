@@ -83,6 +83,7 @@ namespace Muzique_Api.Controllers
                 playlist.nameSearch = model.nameSearch;
                 playlist.description = model.description;
                 playlist.updatedAt = DateTime.Now;
+                playlist.coverImageUrl = model.coverImageUrl;
 
                 if (!string.IsNullOrEmpty(model.coverImageUrl))
                 {

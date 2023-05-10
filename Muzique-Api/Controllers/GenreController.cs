@@ -84,6 +84,7 @@ namespace Muzique_Api.Controllers
                 genre.nameSearch = model.nameSearch;
                 genre.description = model.description;
                 genre.updatedAt = DateTime.Now;
+                genre.coverImageUrl = model.coverImageUrl;
 
                 if (!string.IsNullOrEmpty(model.coverImageUrl))
                 {

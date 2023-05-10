@@ -21,7 +21,7 @@ namespace Muzique_Api.Services
                 query += " and nameSearch like @keyword ";
             }
             GenreViewModel genreViewModel = new GenreViewModel();
-            genreViewModel.ListArtist = new List<Genre>();
+            genreViewModel.ListData = new List<Genre>();
             genreViewModel.TotalRes = 0;
             int totalRows = this._connection.Query<int>(queryCount + query, new { keyword = keyword }).FirstOrDefault();
             if (totalRows > 0)
@@ -33,7 +33,7 @@ namespace Muzique_Api.Services
                 page = 1;
             }
             int pageOffSet = (page - 1) * rowperpage;
-            if (rowperpage < 0)
+            if (rowperpage <= 0)
             {
                 query += " order by createdAt desc";
             }
@@ -41,7 +41,7 @@ namespace Muzique_Api.Services
             {
                 query += " order by createdAt desc limit " + pageOffSet + "," + rowperpage;
             }
-            genreViewModel.ListArtist = this._connection.Query<Genre>(querySelect + query, new { keyword = keyword }).ToList();
+            genreViewModel.ListData = this._connection.Query<Genre>(querySelect + query, new { keyword = keyword }).ToList();
 
             return genreViewModel;
         }
