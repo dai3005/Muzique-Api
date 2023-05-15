@@ -116,7 +116,7 @@ namespace Muzique_Api.Controllers
                         Playlist playlist = playlistService.GetPlaylistDetail(id, transaction);
                         if (playlist == null) return NotFound();
 
-                        if (!playlistService.DeleteGenreSong(id, transaction)) return StatusCode(500, "Lỗi khi xoá ở bảng chung bài hát");
+                        if (!playlistService.DeletePlaylistSong(id, transaction)) return StatusCode(500, "Lỗi khi xoá ở bảng chung bài hát");
 
                         await _deleteFile.DeleteFileAsync(playlist.coverImageUrl);
 

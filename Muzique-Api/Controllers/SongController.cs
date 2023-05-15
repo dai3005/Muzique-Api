@@ -87,6 +87,7 @@ namespace Muzique_Api.Controllers
                         song.albumId = model.albumId;
                         song.createdAt = DateTime.Now;
                         song.nameSearch = model.nameSearch;
+                        song.lyric = model.lyric;
                         if (!songService.InsertSong(song, transaction)) return StatusCode(500, "Lỗi khi thêm bài hát");
 
                         int songId = songService.GetLastSongID(transaction);
@@ -156,36 +157,135 @@ namespace Muzique_Api.Controllers
         }
 
         [HttpPut("/updateSong")]
-        public async Task<IActionResult> UpdateSong(Song model)
+        public async Task<IActionResult> UpdateSong(SongModel model)
         {
             try
             {
-                SongService songService = new SongService();
-                Song song = songService.GetSongById(model.songId);
-                if (song == null) return StatusCode(500, "Bài hát không tồn tại");
-
-                song.name = model.name;
-                song.nameSearch = model.nameSearch;
-                song.description = model.description;
-                song.updatedAt = DateTime.Now;
-                song.albumId = model.albumId;
-
-                if (!string.IsNullOrEmpty(model.coverImageUrl))
+                using (var connect = BaseService.Connect())
                 {
-                    await _deleteFile.DeleteFileAsync(song.coverImageUrl);
+                    connect.Open();
+                    using (var transaction = connect.BeginTransaction())
+                    {
+                        SongService songService = new SongService(connect);
+                        Song song = songService.GetSongById(model.songId, transaction);
+                        if (song == null) return StatusCode(500, "Bài hát không tồn tại");
 
-                    song.coverImageUrl = model.coverImageUrl;
-                }
+                        song.name = model.name;
+                        song.nameSearch = model.nameSearch;
+                        song.description = model.description;
+                        song.updatedAt = DateTime.Now;
+                        song.albumId = model.albumId;
+                        song.lyric = song.lyric;
 
-                if (!string.IsNullOrEmpty(model.audioUrl))
-                {
-                    await _deleteFile.DeleteFileAsync(song.audioUrl);
+                        if (!string.IsNullOrEmpty(model.coverImageUrl))
+                        {
+                            await _deleteFile.DeleteFileAsync(song.coverImageUrl);
 
-                    song.coverImageUrl = model.audioUrl;
-                }
+                            song.coverImageUrl = model.coverImageUrl;
+                        }
 
-                if (!songService.UpdateSong(song)) return StatusCode(500, "Lỗi khi sửa Bài hát");
-                return Ok();
+                        if (!string.IsNullOrEmpty(model.audioUrl))
+                        {
+                            await _deleteFile.DeleteFileAsync(song.audioUrl);
+
+                            song.audioUrl = model.audioUrl;
+                        }
+
+                        if (model.listArtist.Length > 0)
+                        {
+                            foreach (var id in model.listArtist)
+                            {
+                                ArtistService artistService = new ArtistService(connect);
+                                Artist artist = artistService.GetArtistDetail(id, transaction);
+                                if (artist == null) return NotFound();
+
+                                SongAndArtist songAndArtist = new SongAndArtist();
+                                songAndArtist.artistId = id;
+                                songAndArtist.songId = model.songId;
+                                songAndArtist.createdAt = DateTime.Now;
+
+                                if (!songService.InsertSongArtist(songAndArtist, transaction)) return StatusCode(500, "Lỗi khi sửa ca sĩ");
+
+                            }
+                        }
+
+                        if (model.listArtistDelete.Length > 0)
+                        {
+                            foreach (var id in model.listArtistDelete)
+                            {
+                                ArtistService artistService = new ArtistService(connect);
+                                Artist artist = artistService.GetArtistDetail(id, transaction);
+                                if (artist == null) return NotFound();
+
+                                if (!artistService.DeleteArtistSong(id, transaction)) return StatusCode(500, "Lỗi khi xoá ca sĩ");
+
+                            }
+                        }
+
+                        if (model.listPlaylist.Length > 0)
+                        {
+                            foreach (var id in model.listPlaylist)
+                            {
+                                PlaylistService playlistService = new PlaylistService(connect);
+                                Playlist playlist = playlistService.GetPlaylistDetail(id, transaction);
+                                if (playlist == null) return NotFound();
+
+                                SongAndPlaylist songAndPlaylist = new SongAndPlaylist();
+                                songAndPlaylist.playlistId = id;
+                                songAndPlaylist.songId = model.songId;
+                                songAndPlaylist.createdAt = DateTime.Now;
+
+                                if (!songService.InsertSongPlaylist(songAndPlaylist, transaction)) return StatusCode(500, "Lỗi sửa playlist");
+                            }
+                        }
+
+                        if (model.listPlaylistDelete.Length > 0)
+                        {
+                            foreach (var id in model.listPlaylistDelete)
+                            {
+                                PlaylistService playlistService = new PlaylistService(connect);
+                                Playlist playlist = playlistService.GetPlaylistDetail(id, transaction);
+                                if (playlist == null) return NotFound();
+
+                                if (!playlistService.DeletePlaylistSong(id, transaction)) return StatusCode(500, "Lỗi xoá playlist");
+                            }
+                        }
+
+                        if (model.listGenre.Length > 0)
+                        {
+                            foreach (var id in model.listGenre)
+                            {
+                                GenreService genreService = new GenreService(connect);
+                                Genre genre = genreService.GetGenreDetail(id, transaction);
+                                if (genre == null) return NotFound();
+
+                                SongAndGenre songAndGenre = new SongAndGenre();
+                                songAndGenre.genreId = id;
+                                songAndGenre.songId = model.songId;
+                                songAndGenre.createdAt = DateTime.Now;
+
+                                if (!songService.InsertSongGenre(songAndGenre, transaction)) return StatusCode(500, "Lỗi sửa thể loại");
+                            }
+                        }
+
+                        if (model.listGenreDelete.Length > 0)
+                        {
+                            foreach (var id in model.listGenreDelete)
+                            {
+                                GenreService genreService = new GenreService(connect);
+                                Genre genre = genreService.GetGenreDetail(id, transaction);
+                                if (genre == null) return NotFound();
+
+                                if (!genreService.DeleteGenreSong(id, transaction)) return StatusCode(500, "Lỗi xoá thể loại");
+                            }
+                        }
+
+                        if (!songService.UpdateSong(song,transaction)) return StatusCode(500, "Lỗi khi sửa Bài hát");
+
+                        transaction.Commit();
+                        return Ok();
+                    }           
+                }                
             }
             catch (Exception ex)
             {
@@ -212,10 +312,10 @@ namespace Muzique_Api.Controllers
 
                         if (!songService.DeleteSongArtist(id, transaction)) return StatusCode(500, "Lỗi khi xoá ca sĩ");
                         if (!songService.DeleteSongGenre(id, transaction)) return StatusCode(500, "Lỗi khi xoá thể loại");
-                        if(songDetail.listPlaylistId.Count > 0)
+                        if (songDetail.listPlaylistId.Count > 0)
                         {
                             if (!songService.DeleteSongPlaylist(id, transaction)) return StatusCode(500, "Lỗi khi xoá playlist");
-                        }        
+                        }
 
                         await _deleteFile.DeleteFileAsync(song.coverImageUrl);
                         await _deleteFile.DeleteFileAsync(song.audioUrl);

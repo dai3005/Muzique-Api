@@ -19,8 +19,8 @@ namespace Muzique_Api.Controllers
             _fileSaver = new FileSaver(_env);
         }
 
-        [HttpPost("UploadFile"), DisableRequestSizeLimit]
-        public async Task<IActionResult> uploadImage(IFormFile? fileImage=null, IFormFile? fileSong = null)
+        [HttpPost("/uploadFile"), DisableRequestSizeLimit]
+        public async Task<IActionResult> uploadFile(IFormFile? fileImage=null, IFormFile? fileSong = null)
         {
             try
             {

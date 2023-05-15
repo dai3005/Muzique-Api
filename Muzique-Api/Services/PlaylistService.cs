@@ -76,11 +76,11 @@ namespace Muzique_Api.Services
             return status > 0;
         }
 
-        public bool DeleteGenreSong(int id, IDbTransaction transaction = null)
+        public bool DeletePlaylistSong(int id, IDbTransaction transaction = null)
         {
             string delete = "DELETE FROM `song_and_playlist` WHERE playlistId = @id";
             int status = this._connection.Execute(delete, new { id = id }, transaction);
             return status > 0;
-        }
+        }   
     }
 }

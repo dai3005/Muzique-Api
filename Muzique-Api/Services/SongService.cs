@@ -76,17 +76,17 @@ namespace Muzique_Api.Services
 
         public bool InsertSong(Song model, IDbTransaction transaction = null)
         {
-            string insert = "INSERT INTO `song`(`songId`,`name`, `audioUrl`, `description`, `coverImageUrl`, `albumId`, `createdAt`, `nameSearch`)" +
-                " VALUES (@songId,@name,@audioUrl,@description,@coverImageUrl,@albumId,@createdAt, @nameSearch)";
+            string insert = "INSERT INTO `song`(`songId`,`name`, `audioUrl`, `description`, `coverImageUrl`, `albumId`, `createdAt`, `nameSearch`,`lyric`)" +
+                " VALUES (@songId,@name,@audioUrl,@description,@coverImageUrl,@albumId,@createdAt, @nameSearch,@lyric)";
             int status = this._connection.Execute(insert, model,transaction);
             return status > 0;
         }
 
         public bool UpdateSong(Song model, IDbTransaction transaction = null)
         {
-            string query = "UPDATE `song` SET `name`=@name,`audioUrl`=@audioUrl,`description`=@description,`coverImageUrl`=@coverImageUrl," +
+            string query = "UPDATE `song` SET `name`=@name,`audioUrl`=@audioUrl,`description`=@description,`coverImageUrl`=@coverImageUrl,`lyric`=@lyric," +
                 "`albumId`=albumId,`updatedAt`=@updatedAt,`nameSearch`=@nameSearch WHERE songId = @songId";
-            int status = this._connection.Execute(query, model);
+            int status = this._connection.Execute(query, model,transaction);
             return status > 0;
         }
 
