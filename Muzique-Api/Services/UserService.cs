@@ -51,6 +51,12 @@ namespace Muzique_Api.Services
             return this._connection.Query<User>(query, new { id }, transaction).FirstOrDefault();
         }
 
+        public User GetUserByEmail(string email, IDbTransaction transaction = null)
+        {
+            string query = "select * from `user` where email = @email";
+            return this._connection.Query<User>(query, new { email }, transaction).FirstOrDefault();
+        }
+
         public bool UpdateUser(User model)
         {
             string query = "UPDATE `user` SET `email`=@email,`name`=@name,`updatedAt`=@updatedAt," +

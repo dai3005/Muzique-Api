@@ -17,4 +17,10 @@
         public List<User> ListData { get; set; }
         public int TotalRes { get; set; }
     }
+
+    public class UserLogin
+    {
+        public string email { get; set; }
+        public string password { get; set; }
+    }
 }

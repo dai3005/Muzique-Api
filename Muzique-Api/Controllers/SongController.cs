@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Muzique_Api.Helpers;
 using Muzique_Api.Models;
@@ -20,7 +21,7 @@ namespace Muzique_Api.Controllers
             _env = env;
             _deleteFile = new DeleteFile(_env);
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpGet("/getListSong")]
         public IActionResult Get(int page, int rowperpage, string? keyword = "")
         {
