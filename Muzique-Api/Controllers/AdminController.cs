@@ -24,6 +24,7 @@ namespace Muzique_Api.Controllers
             var claims = new[]
             {
                 new Claim(ClaimTypes.Email,admin.name),
+                new Claim(ClaimTypes.NameIdentifier,"0"),
                 new Claim(ClaimTypes.Role,"Admin")
             };
             var token = new JwtSecurityToken(_config["Jwt:Issuer"],
@@ -35,21 +36,6 @@ namespace Muzique_Api.Controllers
 
             return new JwtSecurityTokenHandler().WriteToken(token);
 
-        }
-
-        private User GetCurrentUser()
-        {
-            var identity = HttpContext.User.Identity as ClaimsIdentity;
-            if (identity != null)
-            {
-                var userClaims = identity.Claims;
-                return new User
-                {
-                    email = userClaims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.Value,
-                    userId = Int32.Parse(userClaims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value),
-                };
-            }
-            return null;
         }
 
         [HttpPost("/adminLogin")]

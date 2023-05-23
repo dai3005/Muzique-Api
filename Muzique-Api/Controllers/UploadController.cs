@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Muzique_Api.Helpers;
 
@@ -19,6 +20,7 @@ namespace Muzique_Api.Controllers
             _fileSaver = new FileSaver(_env);
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("/uploadFile"), DisableRequestSizeLimit]
         public async Task<IActionResult> uploadFile(IFormFile? fileImage=null, IFormFile? fileSong = null)
         {

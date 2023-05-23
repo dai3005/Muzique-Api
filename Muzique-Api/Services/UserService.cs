@@ -71,5 +71,55 @@ namespace Muzique_Api.Services
             int status = this._connection.Execute(delete, new { id = id }, transaction);
             return status > 0;
         }
+
+        public List<string> GetListLikeSongId(int id, IDbTransaction transaction = null)
+        {
+            string query = "select songId from `user_like_song` where userId = @id";
+            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+        }
+
+        public List<string> GetListLikeAlbumId(int id, IDbTransaction transaction = null)
+        {
+            string query = "select albumId from `user_like_album` where userId = @id";
+            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+        }
+
+        public List<string> GetListLikeArtistId(int id, IDbTransaction transaction = null)
+        {
+            string query = "select artistId from `user_like_artist` where userId = @id";
+            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+        }
+
+        public List<string> GetListLikePlaylistId(int id, IDbTransaction transaction = null)
+        {
+            string query = "select playlistId from `user_like_playlist` where userId = @id";
+            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+        }
+
+        public List<string> GetListHistorySongId(int id, IDbTransaction transaction = null)
+        {
+            string query = "select * from `user_history_song` where userId = @id";
+            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+        }
+        public List<string> GetListHistoryAlbumId(int id, IDbTransaction transaction = null)
+        {
+            string query = "select * from `user_history_album` where userId = @id";
+            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+        }
+        public List<string> GetListHistoryArtistId(int id, IDbTransaction transaction = null)
+        {
+            string query = "select * from `user_history_artist` where userId = @id";
+            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+        }
+        public List<string> GetListHistoryPlaylistId(int id, IDbTransaction transaction = null)
+        {
+            string query = "select * from `user_history_playlist` where userId = @id";
+            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+        }
+        public List<string> GetListCustomizePlaylistId(int id, IDbTransaction transaction = null)
+        {
+            string query = "select * from `playlist` where userId = @id";
+            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+        }
     }
 }

@@ -25,8 +25,15 @@ namespace Muzique_Api.Controllers
             try
             {
                 ArtistService artistService = new ArtistService();
+                ArtistViewModel artistViewModel = artistService.GetListArtist(page, rowperpage, keyword);
+                for (int i = 0; i < artistViewModel.ListData.Count; i++)
+                {
+                    int playlistId = artistViewModel.ListData[i].artistId;
+                    List<int>? listSongIds = artistService.GetListSongByArtistId(playlistId);
 
-                return Ok(artistService.GetListArtist(page, rowperpage, keyword));
+                    artistViewModel.ListData[i].listSongId = listSongIds;
+                }
+                return Ok(artistViewModel);
             }
             catch (Exception ex)
             {
@@ -42,6 +49,21 @@ namespace Muzique_Api.Controllers
                 ArtistService artistService = new ArtistService();
 
                 return Ok(artistService.GetArtistDetail(id));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpGet("/getArtistById")]
+        public IActionResult GetArtistById(int id)
+        {
+            try
+            {
+                ArtistService artistService = new ArtistService();
+
+                return Ok(artistService.GetArtistById(id));
             }
             catch (Exception ex)
             {

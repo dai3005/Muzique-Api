@@ -52,6 +52,19 @@ namespace Muzique_Api.Services
             return this._connection.Query<Genre>(query, new { id }, transaction).FirstOrDefault();
         }
 
+        public object GetGenreById(int id, IDbTransaction transaction = null)
+        {
+            string query = "select * from `genre` where genreId = @id";
+            string queryListSong = "select songId from `song_and_genre` where genreId=@id";
+            object genre = this._connection.Query<object>(query, new { id }, transaction).FirstOrDefault();
+            List<int> listSongId = this._connection.Query<int>(queryListSong, new { id }, transaction).ToList();
+            return new
+            {
+                genre,
+                listSongId
+            };
+        }
+
         public bool InsertGenre(Genre model)
         {
             string insert = "INSERT INTO `genre`(`genreId`, `name`, `description`, `coverImageUrl`, `createdAt`, `nameSearch`)" +

@@ -10,6 +10,7 @@
         public int artistId { get; set; }
         public DateTime? createdAt { get; set; }
         public DateTime? updatedAt { get; set; }
+        public List<int>? listSongId { get; set; }
     }
 
     public class AlbumViewModel

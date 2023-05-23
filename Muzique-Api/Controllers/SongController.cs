@@ -21,7 +21,7 @@ namespace Muzique_Api.Controllers
             _env = env;
             _deleteFile = new DeleteFile(_env);
         }
-        [Authorize(Roles = "Admin")]
+        
         [HttpGet("/getListSong")]
         public IActionResult Get(int page, int rowperpage, string? keyword = "")
         {
@@ -67,6 +67,7 @@ namespace Muzique_Api.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("/createSong")]
         public IActionResult Post(SongModel model)
         {
@@ -116,7 +117,7 @@ namespace Muzique_Api.Controllers
                             foreach (var id in model.listPlaylist)
                             {
                                 PlaylistService playlistService = new PlaylistService(connect);
-                                Playlist playlist = playlistService.GetPlaylistDetail(id, transaction);
+                                Playlist playlist = playlistService.GetPlaylistById(id, transaction);
                                 if (playlist == null) return NotFound();
 
                                 SongAndPlaylist songAndPlaylist = new SongAndPlaylist();
@@ -157,6 +158,7 @@ namespace Muzique_Api.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPut("/updateSong")]
         public async Task<IActionResult> UpdateSong(SongModel model)
         {
@@ -228,7 +230,7 @@ namespace Muzique_Api.Controllers
                             foreach (var id in model.listPlaylist)
                             {
                                 PlaylistService playlistService = new PlaylistService(connect);
-                                Playlist playlist = playlistService.GetPlaylistDetail(id, transaction);
+                                Playlist playlist = playlistService.GetPlaylistById(id, transaction);
                                 if (playlist == null) return NotFound();
 
                                 SongAndPlaylist songAndPlaylist = new SongAndPlaylist();
@@ -245,7 +247,7 @@ namespace Muzique_Api.Controllers
                             foreach (var id in model.listPlaylistDelete)
                             {
                                 PlaylistService playlistService = new PlaylistService(connect);
-                                Playlist playlist = playlistService.GetPlaylistDetail(id, transaction);
+                                Playlist playlist = playlistService.GetPlaylistById(id, transaction);
                                 if (playlist == null) return NotFound();
 
                                 if (!playlistService.DeletePlaylistSong(id, transaction)) return StatusCode(500, "Lỗi xoá playlist");
@@ -294,6 +296,7 @@ namespace Muzique_Api.Controllers
             }
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpDelete("/deleteSong")]
         public async Task<IActionResult> Delete(int id)
         {

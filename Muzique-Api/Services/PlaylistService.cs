@@ -47,7 +47,7 @@ namespace Muzique_Api.Services
             return playlistViewModel;
         }
 
-        public Playlist GetPlaylistDetail(int id, IDbTransaction transaction = null)
+        public Playlist GetPlaylistById(int id, IDbTransaction transaction = null)
         {
             string query = "select * from `playlist` where playlistId = @id";
             return this._connection.Query<Playlist>(query, new { id }, transaction).FirstOrDefault();
@@ -81,6 +81,26 @@ namespace Muzique_Api.Services
             string delete = "DELETE FROM `song_and_playlist` WHERE playlistId = @id";
             int status = this._connection.Execute(delete, new { id = id }, transaction);
             return status > 0;
-        }   
+        }
+
+        public object GetPlaylistDetail(int id, IDbTransaction transaction = null)
+        {
+            string query = "select * from `playlist` where playlistId = @id";
+            string queryListSong = "select songId from `song_and_playlist` where playlistId=@id";
+            object playlist = this._connection.Query<object>(query, new { id }, transaction).FirstOrDefault();
+            List<int> listSongId = this._connection.Query<int>(queryListSong, new { id }, transaction).ToList();
+            return new
+            {
+                playlist,
+                listSongId
+            };
+        }
+
+        public List<int> GetListSongByPlaylistId(int id, IDbTransaction transaction = null)
+        {
+            string query = "select songId from `song_and_playlist` where playlistId=@id";
+            List<int> listSongIds = this._connection.Query<int>(query, new { id }, transaction).ToList();
+            return listSongIds;
+        }
     }
 }

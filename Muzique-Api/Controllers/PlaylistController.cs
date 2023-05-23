@@ -24,8 +24,31 @@ namespace Muzique_Api.Controllers
             try
             {
                 PlaylistService playlistService = new PlaylistService();
+                PlaylistViewModel playlistViewModel = playlistService.GetListPlaylist(page, rowperpage, keyword);
+                for(int i = 0; i < playlistViewModel.ListData.Count; i++)
+                {
+                    int playlistId = playlistViewModel.ListData[i].playlistId;
+                    List<int>? listSongIds = playlistService.GetListSongByPlaylistId(playlistId);
 
-                return Ok(playlistService.GetListPlaylist(page, rowperpage, keyword));
+                    playlistViewModel.ListData[i].listSongId = listSongIds;
+                }
+
+                return Ok(playlistViewModel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpGet("/getPlaylistById")]
+        public IActionResult GetPlaylistById(int id)
+        {
+            try
+            {
+                PlaylistService playlistService = new PlaylistService();
+
+                return Ok(playlistService.GetPlaylistById(id));
             }
             catch (Exception ex)
             {
@@ -76,7 +99,7 @@ namespace Muzique_Api.Controllers
             try
             {
                 PlaylistService playlistService = new PlaylistService();
-                Playlist playlist = playlistService.GetPlaylistDetail(model.playlistId);
+                Playlist playlist = playlistService.GetPlaylistById(model.playlistId);
                 if (playlist == null) return StatusCode(500, "Playlist không tồn tại");
 
                 playlist.name = model.name;
@@ -113,7 +136,7 @@ namespace Muzique_Api.Controllers
                     {
                         PlaylistService playlistService = new PlaylistService(connect);
 
-                        Playlist playlist = playlistService.GetPlaylistDetail(id, transaction);
+                        Playlist playlist = playlistService.GetPlaylistById(id, transaction);
                         if (playlist == null) return NotFound();
 
                         if (!playlistService.DeletePlaylistSong(id, transaction)) return StatusCode(500, "Lỗi khi xoá ở bảng chung bài hát");

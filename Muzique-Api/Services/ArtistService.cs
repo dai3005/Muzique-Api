@@ -52,6 +52,19 @@ namespace Muzique_Api.Services
             return this._connection.Query<Artist>(query, new { id },transaction).FirstOrDefault();
         }
 
+        public object GetArtistById(int id, IDbTransaction transaction = null)
+        {
+            string query = "select * from `artist` where artistId = @id";
+            string queryListSong = "select songId from `song_and_artist` where artistId=@id";
+            object artist = this._connection.Query<object>(query, new { id }, transaction).FirstOrDefault();
+            List<int> listSongId = this._connection.Query<int>(queryListSong, new { id }, transaction).ToList();
+            return new
+            {
+                artist,
+                listSongId
+            };
+        }
+
         public bool InsertArtist(Artist model)
         {
             string insert = "INSERT INTO `artist`(`artistId`, `name`, `description`, `coverImageUrl`, `createdAt`, `nameSearch`)" +
@@ -80,6 +93,13 @@ namespace Muzique_Api.Services
             string delete = "DELETE FROM `song_and_artist` WHERE artistId = @id";
             int status = this._connection.Execute(delete, new { id = id }, transaction);
             return status > 0;
+        }
+
+        public List<int> GetListSongByArtistId(int id, IDbTransaction transaction = null)
+        {
+            string query = "select songId from `song_and_artist` where artistId=@id";
+            List<int> listSongIds = this._connection.Query<int>(query, new { id }, transaction).ToList();
+            return listSongIds;
         }
     }
 }

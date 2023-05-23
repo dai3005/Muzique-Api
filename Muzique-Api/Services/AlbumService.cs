@@ -52,6 +52,19 @@ namespace Muzique_Api.Services
             return this._connection.Query<Album>(query, new { id }, transaction).FirstOrDefault();
         }
 
+        public object GetAlbumById(int id, IDbTransaction transaction = null)
+        {
+            string query = "select * from `album` where albumId = @id";
+            string queryListSong = "select songId from `song` where albumId=@id";
+            object album = this._connection.Query<object>(query, new { id }, transaction).FirstOrDefault();
+            List<int> listSongId = this._connection.Query<int>(queryListSong, new { id }, transaction).ToList();
+            return new
+            {
+                album,
+                listSongId
+            };
+        }
+
         public bool InsertAlbum(Album model)
         {
             string insert = "INSERT INTO `album`(`albumId`, `name`, `description`, `coverImageUrl`, `createdAt`, `nameSearch`,`artistId`)" +
@@ -80,6 +93,13 @@ namespace Muzique_Api.Services
             string update = "UPDATE `song` SET `albumId`= 0 WHERE albumId = @id;";
             int status = this._connection.Execute(update, new { id = id }, transaction);
             return status > 0;
+        }
+
+        public List<int> GetListSongByAlbumId(int id, IDbTransaction transaction = null)
+        {
+            string query = "select songId from `song` where albumId=@id";
+            List<int> listSongIds = this._connection.Query<int>(query, new { id }, transaction).ToList();
+            return listSongIds;
         }
     }
 }

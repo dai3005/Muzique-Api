@@ -49,6 +49,21 @@ namespace Muzique_Api.Controllers
             }
         }
 
+        [HttpGet("/getGenreById")]
+        public IActionResult GetGenreById(int id)
+        {
+            try
+            {
+                GenreService genreService = new GenreService();
+
+                return Ok(genreService.GetGenreById(id));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
         [HttpPost("/createGenre")]
         public IActionResult CreateGenre(Genre model)
         {

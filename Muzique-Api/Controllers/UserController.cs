@@ -55,7 +55,7 @@ namespace Muzique_Api.Controllers
         }
 
         [AllowAnonymous]
-        [HttpPost("/Login")]
+        [HttpPost("/login")]
         public ActionResult Login(UserLogin model)
         {
             try
@@ -68,6 +68,8 @@ namespace Muzique_Api.Controllers
                 {
                     if (!user.password.Equals(model.password)) return StatusCode(500, "Mật khẩu không đúng!");
                     var token = GenerateToken(user);
+
+                    Response.Cookies.Append("jwt", token);
                     return Ok(token);
                 }
                 else
@@ -82,14 +84,32 @@ namespace Muzique_Api.Controllers
             }
         }
 
-        [HttpGet]
-        [Authorize]
-        public IActionResult AdminEndPoint()
+        [HttpGet("/getUser")]
+        [Authorize(Roles = "User")]
+        public ActionResult GetUser()
         {
-            var currentUser = GetCurrentUser();
-            string email = currentUser.email;
-            int userId = currentUser.userId;
-            return Ok(new { email, userId });
+            try
+            {
+                var currentUser = GetCurrentUser();
+                int userId = currentUser.userId;
+                UserService userService = new UserService();
+                User user = userService.GetUserById(userId);
+                List<string> likeAlbumIdList = userService.GetListLikeAlbumId(userId);
+                List<string> likePlaylistIdList = userService.GetListLikePlaylistId(userId);
+                List<string> likeArtistIdList = userService.GetListLikeArtistId(userId);
+                List<string> likeSongIdList = userService.GetListLikeSongId(userId);
+                List<string> customizePlaylistIdList = userService.GetListCustomizePlaylistId(userId);
+                List<string> recentAlbumIdList = userService.GetListHistoryAlbumId(userId);
+                List<string> recentPlaylistIdList = userService.GetListHistoryPlaylistId(userId);
+                List<string> recentArtistIdList = userService.GetListHistoryArtistId(userId);
+                List<string> recentSongIdList = userService.GetListHistorySongId(userId);
+
+                return Ok(new {user,likeAlbumIdList,likeArtistIdList,likePlaylistIdList,likeSongIdList,customizePlaylistIdList,recentAlbumIdList,recentArtistIdList,recentPlaylistIdList,recentSongIdList});
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
     }

@@ -11,6 +11,7 @@
         public DateTime? updatedAt { get; set; }
         public string type { get; set; }
         public int userId { get; set; }
+        public List<int>? listSongId { get; set; }
     }
 
     public class PlaylistViewModel
