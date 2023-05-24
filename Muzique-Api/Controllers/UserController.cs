@@ -94,17 +94,17 @@ namespace Muzique_Api.Controllers
                 int userId = currentUser.userId;
                 UserService userService = new UserService();
                 User user = userService.GetUserById(userId);
-                List<string> likeAlbumIdList = userService.GetListLikeAlbumId(userId);
-                List<string> likePlaylistIdList = userService.GetListLikePlaylistId(userId);
-                List<string> likeArtistIdList = userService.GetListLikeArtistId(userId);
-                List<string> likeSongIdList = userService.GetListLikeSongId(userId);
-                List<string> customizePlaylistIdList = userService.GetListCustomizePlaylistId(userId);
-                List<string> recentAlbumIdList = userService.GetListHistoryAlbumId(userId);
-                List<string> recentPlaylistIdList = userService.GetListHistoryPlaylistId(userId);
-                List<string> recentArtistIdList = userService.GetListHistoryArtistId(userId);
-                List<string> recentSongIdList = userService.GetListHistorySongId(userId);
+                List<int> likeAlbumIdList = userService.GetListLikeAlbumId(userId);
+                List<int> likePlaylistIdList = userService.GetListLikePlaylistId(userId);
+                List<int> likeArtistIdList = userService.GetListLikeArtistId(userId);
+                List<int> likeSongIdList = userService.GetListLikeSongId(userId);
+                List<int> customizePlaylistIdList = userService.GetListCustomizePlaylistId(userId);
+                List<object> recentAlbumIdList = userService.GetListHistoryAlbumId(userId);
+                List<object> recentPlaylistIdList = userService.GetListHistoryPlaylistId(userId);
+                List<object> recentArtistIdList = userService.GetListHistoryArtistId(userId);
+                List<object> recentSongIdList = userService.GetListHistorySongId(userId);
 
-                return Ok(new {user,likeAlbumIdList,likeArtistIdList,likePlaylistIdList,likeSongIdList,customizePlaylistIdList,recentAlbumIdList,recentArtistIdList,recentPlaylistIdList,recentSongIdList});
+                return Ok(new {user,likeAlbumIdList,likeArtistIdList,likePlaylistIdList,likeSongIdList,customizePlaylistIdList,recentSongIdList,recentPlaylistIdList,recentArtistIdList,recentAlbumIdList});
             }
             catch (Exception ex)
             {
@@ -112,5 +112,112 @@ namespace Muzique_Api.Controllers
             }
         }
 
+
+        [HttpPost("/insertUserHistory")]
+        [Authorize(Roles ="User")]
+        public ActionResult InsertUserHistory(HistoryModel model)
+        {
+            try {
+                var currentUser = GetCurrentUser();
+                int userId = currentUser.userId;
+                UserService userService = new UserService();
+                if(model.type == "Song")
+                {
+                    HistorySong history = new HistorySong();
+                    history.songId = model.objectId;
+                    history.userId = userId;
+                    history.createdAt = DateTime.Now;
+
+                    if (!userService.InsertHistorySong(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                }
+                if(model.type == "Album")
+                {
+                    HistoryAlbum history = new HistoryAlbum();
+                    history.albumId = model.objectId;
+                    history.userId = userId;
+                    history.createdAt = DateTime.Now;
+
+                    if (!userService.InsertHistoryAlbum(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                }
+                if (model.type == "Artist")
+                {
+                    HistoryArtist history = new HistoryArtist();
+                    history.artistId = model.objectId;
+                    history.userId = userId;
+                    history.createdAt = DateTime.Now;
+
+                    if (!userService.InsertHistoryArtist(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                }
+                if (model.type == "Playlist")
+                {
+                    HistoryPlaylist history = new HistoryPlaylist();
+                    history.playlistId = model.objectId;
+                    history.userId = userId;
+                    history.createdAt = DateTime.Now;
+
+                    if (!userService.InsertHistoryPlaylist(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                }
+
+                return Ok();
+            }catch(Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpPost("/insertUserLike")]
+        [Authorize(Roles = "User")]
+        public ActionResult InsertUserLike(HistoryModel model)
+        {
+            try
+            {
+                var currentUser = GetCurrentUser();
+                int userId = currentUser.userId;
+                UserService userService = new UserService();
+                if (model.type == "Song")
+                {
+                    LikeSong history = new LikeSong();
+                    history.songId = model.objectId;
+                    history.userId = userId;
+                    history.createdAt = DateTime.Now;
+
+                    if (!userService.InsertLikeSong(history)) return StatusCode(500, "Lỗi khi thêm vào danh sách yêu thích");
+                }
+                if (model.type == "Album")
+                {
+                    LikeAlbum history = new LikeAlbum();
+                    history.albumId = model.objectId;
+                    history.userId = userId;
+                    history.createdAt = DateTime.Now;
+
+                    if (!userService.InsertLikeAlbum(history)) return StatusCode(500, "Lỗi khi thêm vào danh sách yêu thích");
+                }
+                if (model.type == "Artist")
+                {
+                    LikeArtist history = new LikeArtist();
+                    history.artistId = model.objectId;
+                    history.userId = userId;
+                    history.createdAt = DateTime.Now;
+
+                    if (!userService.InsertLikeArtist(history)) return StatusCode(500, "Lỗi khi thêm vào danh sách yêu thích");
+                }
+                if (model.type == "Playlist")
+                {
+                    LikePlaylist history = new LikePlaylist();
+                    history.playlistId = model.objectId;
+                    history.userId = userId;
+                    history.createdAt = DateTime.Now;
+
+                    if (!userService.InsertLikePlaylist(history)) return StatusCode(500, "Lỗi khi thêm vào danh sách yêu thích");
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

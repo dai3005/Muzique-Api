@@ -72,54 +72,109 @@ namespace Muzique_Api.Services
             return status > 0;
         }
 
-        public List<string> GetListLikeSongId(int id, IDbTransaction transaction = null)
+        public List<int> GetListLikeSongId(int id, IDbTransaction transaction = null)
         {
             string query = "select songId from `user_like_song` where userId = @id";
-            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+            return this._connection.Query<int>(query, new { id }, transaction).ToList();
         }
 
-        public List<string> GetListLikeAlbumId(int id, IDbTransaction transaction = null)
+        public List<int> GetListLikeAlbumId(int id, IDbTransaction transaction = null)
         {
             string query = "select albumId from `user_like_album` where userId = @id";
-            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+            return this._connection.Query<int>(query, new { id }, transaction).ToList();
         }
 
-        public List<string> GetListLikeArtistId(int id, IDbTransaction transaction = null)
+        public List<int> GetListLikeArtistId(int id, IDbTransaction transaction = null)
         {
             string query = "select artistId from `user_like_artist` where userId = @id";
-            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+            return this._connection.Query<int>(query, new { id }, transaction).ToList();
         }
 
-        public List<string> GetListLikePlaylistId(int id, IDbTransaction transaction = null)
+        public List<int> GetListLikePlaylistId(int id, IDbTransaction transaction = null)
         {
             string query = "select playlistId from `user_like_playlist` where userId = @id";
-            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+            return this._connection.Query<int>(query, new { id }, transaction).ToList();
         }
 
-        public List<string> GetListHistorySongId(int id, IDbTransaction transaction = null)
+        public List<object> GetListHistorySongId(int id, IDbTransaction transaction = null)
         {
-            string query = "select * from `user_history_song` where userId = @id";
-            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+            string query = "select songId,createdAt from `user_history_song` where userId = @id";
+            return this._connection.Query<object>(query, new { id }, transaction).ToList();
         }
-        public List<string> GetListHistoryAlbumId(int id, IDbTransaction transaction = null)
+        public List<object> GetListHistoryAlbumId(int id, IDbTransaction transaction = null)
         {
-            string query = "select * from `user_history_album` where userId = @id";
-            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+            string query = "select albumId,createdAt from `user_history_album` where userId = @id";
+            return this._connection.Query<object>(query, new { id }, transaction).ToList();
         }
-        public List<string> GetListHistoryArtistId(int id, IDbTransaction transaction = null)
+        public List<object> GetListHistoryArtistId(int id, IDbTransaction transaction = null)
         {
-            string query = "select * from `user_history_artist` where userId = @id";
-            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+            string query = "select artistId,createdAt from `user_history_artist` where userId = @id";
+            return this._connection.Query<object>(query, new { id }, transaction).ToList();
         }
-        public List<string> GetListHistoryPlaylistId(int id, IDbTransaction transaction = null)
+        public List<object> GetListHistoryPlaylistId(int id, IDbTransaction transaction = null)
         {
-            string query = "select * from `user_history_playlist` where userId = @id";
-            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+            string query = "select playlistId,createdAt from `user_history_playlist` where userId = @id";
+            return this._connection.Query<object>(query, new { id }, transaction).ToList();
         }
-        public List<string> GetListCustomizePlaylistId(int id, IDbTransaction transaction = null)
+
+        public List<int> GetListCustomizePlaylistId(int id, IDbTransaction transaction = null)
         {
             string query = "select * from `playlist` where userId = @id";
-            return this._connection.Query<string>(query, new { id }, transaction).ToList();
+            return this._connection.Query<int>(query, new { id }, transaction).ToList();
+        }
+
+        public bool InsertHistorySong(HistorySong model, IDbTransaction transaction = null)
+        {
+            string insert = "INSERT INTO `user_history_song`(`userHistorySongId`, `userId`, `songId`, `createdAt`) VALUES (null,@userId,@songId,@createdAt)";
+            int status = this._connection.Execute(insert, model, transaction);
+            return status > 0;
+        }
+
+        public bool InsertLikeSong(LikeSong model, IDbTransaction transaction = null)
+        {
+            string insert = "INSERT INTO `user_like_song`(`userLikeSongId`, `userId`, `songId`, `createdAt`) VALUES (null,@userId,@songId,@createdAt)";
+            int status = this._connection.Execute(insert, model, transaction);
+            return status > 0;
+        }
+
+        public bool InsertHistoryAlbum(HistoryAlbum model, IDbTransaction transaction = null)
+        {
+            string insert = "INSERT INTO `user_history_album`(`userHistoryAlbumId`, `userId`, `albumId`, `createdAt`) VALUES (null,@userId,@albumId,@createdAt)";
+            int status = this._connection.Execute(insert, model, transaction);
+            return status > 0;
+        }
+        public bool InsertLikeAlbum(LikeAlbum model, IDbTransaction transaction = null)
+        {
+            string insert = "INSERT INTO `user_like_album`(`userLikeAlbumId`, `userId`, `albumId`, `createdAt`) VALUES (null,@userId,@albumId,@createdAt)";
+            int status = this._connection.Execute(insert, model, transaction);
+            return status > 0;
+        }
+        public bool InsertHistoryArtist(HistoryArtist model, IDbTransaction transaction = null)
+        {
+            string insert = "INSERT INTO `user_history_artist`(`userHistoryArtistId`, `userId`, `artistId`, `createdAt`) VALUES (null,@userId,@artistId,@createdAt)";
+            int status = this._connection.Execute(insert, model, transaction);
+            return status > 0;
+        }
+
+        public bool InsertLikeArtist(LikeArtist model, IDbTransaction transaction = null)
+        {
+            string insert = "INSERT INTO `user_like_artist`(`userLikeArtistId`, `userId`, `artistId`, `createdAt`) VALUES (null,@userId,@artistId,@createdAt)";
+            int status = this._connection.Execute(insert, model, transaction);
+            return status > 0;
+        }
+
+        public bool InsertHistoryPlaylist(HistoryPlaylist model, IDbTransaction transaction = null)
+        {
+            string insert = "INSERT INTO `user_history_playlist`(`userHistoryPlaylistId`, `userId`, `playlistId`, `createdAt`) VALUES (null,@userId,@playlistId,@createdAt)";
+            int status = this._connection.Execute(insert, model, transaction);
+            return status > 0;
+        }
+
+        public bool InsertLikePlaylist(LikePlaylist model, IDbTransaction transaction = null)
+        {
+            string insert = "INSERT INTO `user_like_playlist`(`userLikePlaylistId`, `userId`, `playlistId`, `createdAt`) VALUES (null,@userId,@playlistId,@createdAt)";
+            int status = this._connection.Execute(insert, model, transaction);
+            return status > 0;
         }
     }
 }
