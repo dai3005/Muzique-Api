@@ -158,7 +158,6 @@ namespace Muzique_Api.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpPut("/updateSong")]
         public async Task<IActionResult> UpdateSong(SongModel model)
         {

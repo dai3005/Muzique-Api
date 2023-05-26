@@ -15,7 +15,7 @@ namespace Muzique_Api.Services
         {
             string querySelect = "select * ";
             string queryCount = "select count(*) as Total ";
-            string query = " from `playlist` where 1=1 ";
+            string query = " from `playlist` where type='system' ";
             if (!string.IsNullOrEmpty(keyword))
             {
                 keyword = "%" + keyword.Replace(' ', '%') + "%";
@@ -56,7 +56,7 @@ namespace Muzique_Api.Services
         public bool InsertPlaylist(Playlist model)
         {
             string insert = "INSERT INTO `playlist`(`playlistId`, `name`, `description`, `coverImageUrl`, `createdAt`, `nameSearch`,`type`,`userId`)" +
-                " VALUES (null,@name,@description,@coverImageUrl,@createdAt,@nameSearch,SYSTEM,null)";
+                " VALUES (null,@name,@description,@coverImageUrl,@createdAt,@nameSearch,@type,@userId)";
             int status = this._connection.Execute(insert, model);
             return status > 0;
         }
@@ -101,6 +101,34 @@ namespace Muzique_Api.Services
             string query = "select songId from `song_and_playlist` where playlistId=@id";
             List<int> listSongIds = this._connection.Query<int>(query, new { id }, transaction).ToList();
             return listSongIds;
+        }
+
+        public bool UpdatePlaylistName(Playlist model, IDbTransaction transaction = null)
+        {
+            string query = "UPDATE `playlist` SET `name`=@name WHERE playlistID = @playlistId and userId = @userId";
+            int status = this._connection.Execute(query, model,transaction);
+            return status > 0;
+        }
+
+        public bool UpdatePlaylistImage(Playlist model, IDbTransaction transaction = null)
+        {
+            string query = "UPDATE `playlist` SET `coverImageUrl`=@coverImageUrl,`updatedAt`=@updatedAt WHERE playlistID = @playlistId and userId = @userId";
+            int status = this._connection.Execute(query, model,transaction);
+            return status > 0;
+        }
+
+        public bool AddSongToPlaylist(SongPlaylist model, IDbTransaction transaction = null)
+        {
+            string insert = "INSERT INTO `song_and_playlist`(`songAndPlaylistId`, `songId`, `playlistId`, `createdAt`) VALUES (null,@songId,@playlistId,@createdAt)";
+            int status = this._connection.Execute(insert, model,transaction);
+            return status > 0;
+        }
+
+        public bool DeleteSongFromPlaylist(SongPlaylist model, IDbTransaction transaction = null)
+        {
+            string query = "DELETE FROM `song_and_playlist` WHERE playlistId = @playlistId and songId = @songId";
+            int status = this._connection.Execute(query, model, transaction);
+            return status > 0;
         }
     }
 }

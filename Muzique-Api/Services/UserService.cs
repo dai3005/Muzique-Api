@@ -65,6 +65,28 @@ namespace Muzique_Api.Services
             return status > 0;
         }
 
+        public bool UserUpdateName(UserUpdate model)
+        {
+            string query = "UPDATE `user` SET `name`=@name,`updatedAt`=@updatedAt," +
+                "`nameSearch`=@nameSearch WHERE userId = @userId";
+            int status = this._connection.Execute(query, model);
+            return status > 0;
+        }
+        public bool UserUpdateImage(UserUpdate model)
+        {
+            string query = "UPDATE `user` SET `coverImageUrl`=@coverImageUrl,`updatedAt`=@updatedAt WHERE userId = @userId";
+            int status = this._connection.Execute(query, model);
+            return status > 0;
+        }
+
+        public bool InsertUser(User model, IDbTransaction transaction = null)
+        {
+            string query = "INSERT INTO `user`(`userId`, `email`, `name`, `password`, `createdAt`, `nameSearch`,`coverImageUrl`) " +
+                "VALUES (null,@email,@name,@password,@createdAt,@coverImageUrl)";
+            int status = this._connection.Execute(query, model,transaction);
+            return status > 0;
+        }
+
         public bool DeleteUser(int id, IDbTransaction transaction = null)
         {
             string delete = "DELETE FROM `user` WHERE userId = @id";
@@ -101,22 +123,41 @@ namespace Muzique_Api.Services
             string query = "select songId,createdAt from `user_history_song` where userId = @id";
             return this._connection.Query<object>(query, new { id }, transaction).ToList();
         }
+        public object GetHistorySongUser(HistorySong model, IDbTransaction transaction = null)
+        {
+            string query = "select * from `user_history_song` where userId = @userId and songId = @songId";
+            return this._connection.Query<object>(query, new { model }, transaction).ToList();
+        }
         public List<object> GetListHistoryAlbumId(int id, IDbTransaction transaction = null)
         {
             string query = "select albumId,createdAt from `user_history_album` where userId = @id";
             return this._connection.Query<object>(query, new { id }, transaction).ToList();
+        }
+        public object GetHistoryAlbumUser(HistoryAlbum model, IDbTransaction transaction = null)
+        {
+            string query = "select * from `user_history_album` where userId = @userId and albumId = @albumId";
+            return this._connection.Query<object>(query, new { model }, transaction).ToList();
         }
         public List<object> GetListHistoryArtistId(int id, IDbTransaction transaction = null)
         {
             string query = "select artistId,createdAt from `user_history_artist` where userId = @id";
             return this._connection.Query<object>(query, new { id }, transaction).ToList();
         }
+        public object GetHistoryArtistUser(HistoryArtist model, IDbTransaction transaction = null)
+        {
+            string query = "select * from `user_history_artist` where userId = @userId and artistId = @artistId";
+            return this._connection.Query<object>(query, new { model }, transaction).ToList();
+        }
         public List<object> GetListHistoryPlaylistId(int id, IDbTransaction transaction = null)
         {
             string query = "select playlistId,createdAt from `user_history_playlist` where userId = @id";
             return this._connection.Query<object>(query, new { id }, transaction).ToList();
         }
-
+        public object GetHistoryPlaylistUser(HistoryPlaylist model, IDbTransaction transaction = null)
+        {
+            string query = "select * from `user_history_playlist` where userId = @userId and playlistId = @playlistId";
+            return this._connection.Query<object>(query, new { model }, transaction).ToList();
+        }
         public List<int> GetListCustomizePlaylistId(int id, IDbTransaction transaction = null)
         {
             string query = "select * from `playlist` where userId = @id";
@@ -143,12 +184,14 @@ namespace Muzique_Api.Services
             int status = this._connection.Execute(insert, model, transaction);
             return status > 0;
         }
+
         public bool InsertLikeAlbum(LikeAlbum model, IDbTransaction transaction = null)
         {
             string insert = "INSERT INTO `user_like_album`(`userLikeAlbumId`, `userId`, `albumId`, `createdAt`) VALUES (null,@userId,@albumId,@createdAt)";
             int status = this._connection.Execute(insert, model, transaction);
             return status > 0;
         }
+
         public bool InsertHistoryArtist(HistoryArtist model, IDbTransaction transaction = null)
         {
             string insert = "INSERT INTO `user_history_artist`(`userHistoryArtistId`, `userId`, `artistId`, `createdAt`) VALUES (null,@userId,@artistId,@createdAt)";
@@ -174,6 +217,33 @@ namespace Muzique_Api.Services
         {
             string insert = "INSERT INTO `user_like_playlist`(`userLikePlaylistId`, `userId`, `playlistId`, `createdAt`) VALUES (null,@userId,@playlistId,@createdAt)";
             int status = this._connection.Execute(insert, model, transaction);
+            return status > 0;
+        }
+
+        public bool DeleteUserLikeSong(LikeSong model, IDbTransaction transaction = null)
+        {
+            string query = "DELETE FROM `user_like_song` WHERE songId = @songId and userId = @userId";
+            int status = this._connection.Execute(query, model, transaction);
+            return status > 0;
+        }
+        public bool DeleteUserLikeAlbum(LikeAlbum model, IDbTransaction transaction = null)
+        {
+            string query = "DELETE FROM `user_like_album` WHERE albumId = @albumId and userId = @userId";
+            int status = this._connection.Execute(query, model, transaction);
+            return status > 0;
+        }
+
+        public bool DeleteUserLikeArtist(LikeArtist model, IDbTransaction transaction = null)
+        {
+            string query = "DELETE FROM `user_like_artist` WHERE artistId = @artirtId and userId = @userId";
+            int status = this._connection.Execute(query, model, transaction);
+            return status > 0;
+        }
+
+        public bool DeleteUserLikePlaylist(LikePlaylist model, IDbTransaction transaction = null)
+        {
+            string query = "DELETE FROM `user_like_playlist` WHERE playlistId = @playlistId and userId = @userId";
+            int status = this._connection.Execute(query, model, transaction);
             return status > 0;
         }
     }

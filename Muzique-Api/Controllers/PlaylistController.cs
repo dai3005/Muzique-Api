@@ -25,7 +25,7 @@ namespace Muzique_Api.Controllers
             {
                 PlaylistService playlistService = new PlaylistService();
                 PlaylistViewModel playlistViewModel = playlistService.GetListPlaylist(page, rowperpage, keyword);
-                for(int i = 0; i < playlistViewModel.ListData.Count; i++)
+                for (int i = 0; i < playlistViewModel.ListData.Count; i++)
                 {
                     int playlistId = playlistViewModel.ListData[i].playlistId;
                     List<int>? listSongIds = playlistService.GetListSongByPlaylistId(playlistId);
@@ -79,10 +79,11 @@ namespace Muzique_Api.Controllers
                 PlaylistService playlistService = new PlaylistService();
                 Playlist playlist = new Playlist();
                 playlist.name = model.name;
-                playlist.nameSearch = model.nameSearch;
+                playlist.nameSearch = Helper.RemoveUnicode(model.name);
                 playlist.description = model.description;
                 playlist.coverImageUrl = model.coverImageUrl;
                 playlist.createdAt = DateTime.Now;
+                playlist.type = model.type;
 
                 if (!playlistService.InsertPlaylist(playlist)) return StatusCode(500, "Lỗi khi thêm Playlist");
                 return Ok();
@@ -139,10 +140,17 @@ namespace Muzique_Api.Controllers
                         Playlist playlist = playlistService.GetPlaylistById(id, transaction);
                         if (playlist == null) return NotFound();
 
-                        if (!playlistService.DeletePlaylistSong(id, transaction)) return StatusCode(500, "Lỗi khi xoá ở bảng chung bài hát");
-
-                        await _deleteFile.DeleteFileAsync(playlist.coverImageUrl);
-
+                        List<int> listSong = playlistService.GetListSongByPlaylistId(id,transaction);
+                        if (listSong.Count > 0)
+                        {
+                            if (!playlistService.DeletePlaylistSong(id, transaction)) return StatusCode(500, "Lỗi khi xoá ở bảng chung bài hát");
+                        }
+           
+                        if(playlist.coverImageUrl != "/assets/images/default-cover.png")
+                        {
+                            await _deleteFile.DeleteFileAsync(playlist.coverImageUrl);
+                        }
+                        
                         if (!playlistService.DeletePlaylist(id, transaction)) return StatusCode(500, "Lỗi khi xoá playlist");
 
                         transaction.Commit();
@@ -154,6 +162,39 @@ namespace Muzique_Api.Controllers
             {
                 return BadRequest(ex);
             }
+        }
+
+        [HttpPost("/addSongToPlaylist")]
+        public IActionResult AddSongToPlaylist(SongPlaylist model)
+        {
+            try
+            {
+                PlaylistService playlistService = new PlaylistService();
+                SongPlaylist songPlaylist = new SongPlaylist();
+                songPlaylist.playlistId = model.playlistId;
+                songPlaylist.songId = model.songId;
+                songPlaylist.createdAt = DateTime.Now;
+
+                if (!playlistService.AddSongToPlaylist(songPlaylist)) return StatusCode(500, "Lỗi khi thêm bài hát vào Playlist");
+                return Ok();
+            }
+            catch (Exception ex) { return BadRequest(ex); }
+        }
+
+        [HttpPost("/deleteSongFromPlaylist")]
+        public IActionResult DeleteSongFromPlaylist(SongPlaylist model)
+        {
+            try
+            {
+                PlaylistService playlistService = new PlaylistService();
+                SongPlaylist songPlaylist = new SongPlaylist();
+                songPlaylist.playlistId = model.playlistId;
+                songPlaylist.songId = model.songId;
+
+                if (!playlistService.DeleteSongFromPlaylist(songPlaylist)) return StatusCode(500, "Lỗi khi xoá bài hát khỏi Playlist");
+                return Ok();
+            }
+            catch (Exception ex) { return BadRequest(ex); }
         }
     }
 }

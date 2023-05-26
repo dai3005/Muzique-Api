@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
+using Muzique_Api.Helpers;
 using Muzique_Api.Models;
 using Muzique_Api.Services;
 using System.IdentityModel.Tokens.Jwt;
@@ -55,6 +56,41 @@ namespace Muzique_Api.Controllers
         }
 
         [AllowAnonymous]
+        [HttpPost("/signUp")]
+        public ActionResult SignUp(User model)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(model.email) || string.IsNullOrEmpty(model.password)) return StatusCode(500, "Email hoặc mật khẩu rỗng!");
+                if(model.password.Length < 8) return StatusCode(500, "weak-password");
+                UserService userService = new UserService();
+                User userCheck = userService.GetUserByEmail(model.email);
+                if (userCheck != null)
+                {
+                    return StatusCode(500, "Email already exists");
+                }
+                else
+                {
+                    User user = new User();
+                    user.email = model.email;
+                    user.password = model.password;
+                    user.name = model.name;
+                    user.nameSearch = Helper.RemoveUnicode(model.name);
+                    user.createdAt = DateTime.Now;
+                    user.coverImageUrl = model.coverImageUrl;
+
+                    if (!userService.InsertUser(user)) return StatusCode(500, "Create User Error");
+                    return Ok();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [AllowAnonymous]
         [HttpPost("/login")]
         public ActionResult Login(UserLogin model)
         {
@@ -82,6 +118,33 @@ namespace Muzique_Api.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpPost("/userUpdate")]
+        [Authorize(Roles ="User")]
+        public ActionResult UserUpdate(UserUpdate model)
+        {
+            try {
+                var currentUser = GetCurrentUser();
+                int userId = currentUser.userId;
+                UserService userService = new UserService();
+                UserUpdate userUpdate = new UserUpdate();
+                userUpdate.userId = userId;
+                userUpdate.updatedAt = DateTime.Now;
+                if (!string.IsNullOrEmpty(model.coverImageUrl))
+                {
+                    userUpdate.coverImageUrl = model.coverImageUrl;
+                    if (!userService.UserUpdateImage(userUpdate)) return StatusCode(500, "Lỗi khi sửa ảnh");
+                }
+                if (!string.IsNullOrEmpty(model.name))
+                {
+                    userUpdate.name = model.name;
+                    userUpdate.nameSearch = Helper.RemoveUnicode(model.name);
+                    if (!userService.UserUpdateName(userUpdate)) return StatusCode(500, "Lỗi khi sửa tên");
+                }
+                return Ok();
+            }
+            catch(Exception ex) { return BadRequest(ex); }
         }
 
         [HttpGet("/getUser")]
@@ -112,7 +175,6 @@ namespace Muzique_Api.Controllers
             }
         }
 
-
         [HttpPost("/insertUserHistory")]
         [Authorize(Roles ="User")]
         public ActionResult InsertUserHistory(HistoryModel model)
@@ -128,7 +190,11 @@ namespace Muzique_Api.Controllers
                     history.userId = userId;
                     history.createdAt = DateTime.Now;
 
-                    if (!userService.InsertHistorySong(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                    var songUser = userService.GetHistorySongUser(history);
+                    if (songUser == null)
+                    {
+                        if (!userService.InsertHistorySong(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                    }                 
                 }
                 if(model.type == "Album")
                 {
@@ -137,7 +203,11 @@ namespace Muzique_Api.Controllers
                     history.userId = userId;
                     history.createdAt = DateTime.Now;
 
-                    if (!userService.InsertHistoryAlbum(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                    var albumUser = userService.GetHistoryAlbumUser(history);
+                    if (albumUser == null)
+                    {
+                        if (!userService.InsertHistoryAlbum(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                    }
                 }
                 if (model.type == "Artist")
                 {
@@ -146,7 +216,11 @@ namespace Muzique_Api.Controllers
                     history.userId = userId;
                     history.createdAt = DateTime.Now;
 
-                    if (!userService.InsertHistoryArtist(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                    var artistUser = userService.GetHistoryArtistUser(history);
+                    if (artistUser == null)
+                    {
+                        if (!userService.InsertHistoryArtist(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                    }
                 }
                 if (model.type == "Playlist")
                 {
@@ -154,8 +228,10 @@ namespace Muzique_Api.Controllers
                     history.playlistId = model.objectId;
                     history.userId = userId;
                     history.createdAt = DateTime.Now;
-
-                    if (!userService.InsertHistoryPlaylist(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                    var playlistUser = userService.GetHistoryPlaylistUser(history);
+                    if(playlistUser == null) {
+                        if (!userService.InsertHistoryPlaylist(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                    }
                 }
 
                 return Ok();
@@ -164,7 +240,6 @@ namespace Muzique_Api.Controllers
                 return BadRequest(ex.Message);
             }
         }
-
 
         [HttpPost("/insertUserLike")]
         [Authorize(Roles = "User")]
@@ -217,6 +292,120 @@ namespace Muzique_Api.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("/deleteUserLike")]
+        [Authorize(Roles = "User")]
+        public ActionResult DeleteUserLike (HistoryModel model)
+        {
+            try
+            {
+                var currentUser = GetCurrentUser();
+                int userId = currentUser.userId;
+                UserService userService = new UserService();
+                if (model.type == "Song")
+                {
+                    LikeSong history = new LikeSong();
+                    history.songId = model.objectId;
+                    history.userId = userId;
+                    history.createdAt = DateTime.Now;
+
+                    if (!userService.DeleteUserLikeSong(history)) return StatusCode(500, "Lỗi khi xoá khỏi danh sách yêu thích");
+                }
+                if (model.type == "Album")
+                {
+                    LikeAlbum history = new LikeAlbum();
+                    history.albumId = model.objectId;
+                    history.userId = userId;
+                    history.createdAt = DateTime.Now;
+
+                    if (!userService.DeleteUserLikeAlbum(history)) return StatusCode(500, "Lỗi khi xoá khỏi danh sách yêu thích");
+                }
+                if (model.type == "Artist")
+                {
+                    LikeArtist history = new LikeArtist();
+                    history.artistId = model.objectId;
+                    history.userId = userId;
+                    history.createdAt = DateTime.Now;
+
+                    if (!userService.DeleteUserLikeArtist(history)) return StatusCode(500, "Lỗi khi xoá khỏi danh sách yêu thích");
+                }
+                if (model.type == "Playlist")
+                {
+                    LikePlaylist history = new LikePlaylist();
+                    history.playlistId = model.objectId;
+                    history.userId = userId;
+                    history.createdAt = DateTime.Now;
+
+                    if (!userService.DeleteUserLikePlaylist(history)) return StatusCode(500, "Lỗi khi xoá khỏi danh sách yêu thích");
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut("/updateUserPlaylist")]
+        [Authorize(Roles = "User")]
+        public ActionResult UpdateUserPlaylist(Playlist model)
+        {
+            try
+            {
+                var currentUser = GetCurrentUser();
+                int userId = currentUser.userId;
+                PlaylistService playlistService = new PlaylistService();
+                Playlist playlist = playlistService.GetPlaylistById(model.playlistId);
+                if (playlist == null) return StatusCode(500, "Playlist không tồn tại");
+                playlist.userId = userId;
+                playlist.updatedAt = DateTime.Now;
+                if (!string.IsNullOrEmpty(model.name))
+                {
+                    playlist.name = model.name;
+                    if (!playlistService.UpdatePlaylistName(playlist)) return StatusCode(500, "Lỗi khi sửa tên Playlist");
+                }
+
+                if (!string.IsNullOrEmpty(model.coverImageUrl))
+                {
+                    playlist.coverImageUrl = model.coverImageUrl;
+                    if (!playlistService.UpdatePlaylistImage(playlist)) return StatusCode(500, "Lỗi khi sửa ảnh Playlist");
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("/createUserPlaylist")]
+        [Authorize(Roles = "User")]
+        public IActionResult CreateUserPlaylist(Playlist model)
+        {
+            try
+            {
+                var currentUser = GetCurrentUser();
+                int userId = currentUser.userId;
+                PlaylistService playlistService = new PlaylistService();
+                Playlist playlist = new Playlist();
+                playlist.name = model.name;
+                playlist.nameSearch = Helper.RemoveUnicode(model.name);
+                playlist.description = model.description;
+                playlist.coverImageUrl = model.coverImageUrl;
+                playlist.createdAt = DateTime.Now;
+                playlist.type = model.type;
+                playlist.userId = userId;
+
+                if (!playlistService.InsertPlaylist(playlist)) return StatusCode(500, "Lỗi khi thêm Playlist");
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
             }
         }
     }

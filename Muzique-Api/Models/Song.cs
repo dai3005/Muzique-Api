@@ -13,7 +13,7 @@ namespace Muzique_Api.Models
         public string audioUrl { get; set; }
         public string description { get; set; }
         public string coverImageUrl { get; set; }
-        public string lyric { get; set; }
+        public string? lyric { get; set; }
         public int? albumId { get; set; }
         public DateTime? createdAt { get; set; }
         public DateTime? updatedAt { get;set; }
