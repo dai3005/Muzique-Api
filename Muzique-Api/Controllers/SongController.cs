@@ -67,7 +67,6 @@ namespace Muzique_Api.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpPost("/createSong")]
         public IActionResult Post(SongModel model)
         {

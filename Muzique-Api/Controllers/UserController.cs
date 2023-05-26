@@ -192,7 +192,6 @@ namespace Muzique_Api.Controllers
                     history.userId = userId;
                     history.createdAt = DateTime.Now;
 
-
                     if (!userService.InsertHistorySong(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
 
                 }
@@ -460,6 +459,60 @@ namespace Muzique_Api.Controllers
 
                 if (!playlistService.InsertPlaylist(playlist)) return StatusCode(500, "Lỗi khi thêm Playlist");
                 return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpGet("/userSearch")]
+        public IActionResult UserSearch(string keyword)
+        {
+            try
+            {
+                //Song
+                SongService songService = new SongService();
+                SongViewModel song =  songService.GetListSong(1, 10, keyword);
+                List<Song> listSong = song.ListSong;
+
+                //Playlist
+                PlaylistService playlistService = new PlaylistService();
+                PlaylistViewModel playlistViewModel = playlistService.GetListPlaylist(1, 10, keyword);
+                for (int i = 0; i < playlistViewModel.ListData.Count; i++)
+                {
+                    int playlistId = playlistViewModel.ListData[i].playlistId;
+                    List<int>? listSongIds = playlistService.GetListSongByPlaylistId(playlistId);
+
+                    playlistViewModel.ListData[i].listSongId = listSongIds;
+                }
+                List<Playlist> listPlaylist = playlistViewModel.ListData;
+
+                //Artist
+                ArtistService artistService = new ArtistService();
+                ArtistViewModel artistViewModel = artistService.GetListArtist(1, 10, keyword);
+                for (int i = 0; i < artistViewModel.ListData.Count; i++)
+                {
+                    int playlistId = artistViewModel.ListData[i].artistId;
+                    List<int>? listSongIds = artistService.GetListSongByArtistId(playlistId);
+
+                    artistViewModel.ListData[i].listSongId = listSongIds;
+                }
+                List<Artist> listArtist = artistViewModel.ListData;
+
+                //Album
+                AlbumService albumService = new AlbumService();
+                AlbumViewModel albumViewModel = albumService.GetListAlbum(1, 10, keyword);
+                for (int i = 0; i < albumViewModel.ListData.Count; i++)
+                {
+                    int playlistId = albumViewModel.ListData[i].albumId;
+                    List<int>? listSongIds = albumService.GetListSongByAlbumId(playlistId);
+
+                    albumViewModel.ListData[i].listSongId = listSongIds;
+                }
+                List<Album> listAlbum = albumViewModel.ListData;
+
+                return Ok(new {listSong,listAlbum,listArtist,listPlaylist });
             }
             catch (Exception ex)
             {

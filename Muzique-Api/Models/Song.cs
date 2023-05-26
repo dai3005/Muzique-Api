@@ -28,12 +28,12 @@ namespace Muzique_Api.Models
 
     public class SongModel : Song
     {
-        public int[] listArtist { get; set; }
-        public int[] listArtistDelete { get; set; }
-        public int[] listGenre  { get; set; }
-        public int[] listGenreDelete { get; set; }
-        public int[] listPlaylist { get; set; }
-        public int[] listPlaylistDelete { get; set; }
+        public int[]? listArtist { get; set; }
+        public int[]? listArtistDelete { get; set; }
+        public int[]? listGenre  { get; set; }
+        public int[]? listGenreDelete { get; set; }
+        public int[]? listPlaylist { get; set; }
+        public int[]? listPlaylistDelete { get; set; }
     }
 
     public class SongDetail
