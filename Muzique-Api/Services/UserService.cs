@@ -171,6 +171,13 @@ namespace Muzique_Api.Services
             return status > 0;
         }
 
+        public bool DeleteHistorySong(HistorySong model, IDbTransaction transaction = null)
+        {
+            string query = "DELETE FROM `user_history_song` WHERE songId = @songId and userId = @userId";
+            int status = this._connection.Execute(query, model, transaction);
+            return status > 0;
+        }
+
         public bool InsertLikeSong(LikeSong model, IDbTransaction transaction = null)
         {
             string insert = "INSERT INTO `user_like_song`(`userLikeSongId`, `userId`, `songId`, `createdAt`) VALUES (null,@userId,@songId,@createdAt)";
@@ -184,7 +191,12 @@ namespace Muzique_Api.Services
             int status = this._connection.Execute(insert, model, transaction);
             return status > 0;
         }
-
+        public bool DeleteHistoryAlbum(HistoryAlbum model, IDbTransaction transaction = null)
+        {
+            string query = "DELETE FROM `user_history_album` WHERE albumId = @albumId and userId = @userId";
+            int status = this._connection.Execute(query, model, transaction);
+            return status > 0;
+        }
         public bool InsertLikeAlbum(LikeAlbum model, IDbTransaction transaction = null)
         {
             string insert = "INSERT INTO `user_like_album`(`userLikeAlbumId`, `userId`, `albumId`, `createdAt`) VALUES (null,@userId,@albumId,@createdAt)";
@@ -198,7 +210,12 @@ namespace Muzique_Api.Services
             int status = this._connection.Execute(insert, model, transaction);
             return status > 0;
         }
-
+        public bool DeleteHistoryArtist(HistoryArtist model, IDbTransaction transaction = null)
+        {
+            string query = "DELETE FROM `user_history_artist` WHERE artistId = @artistId and userId = @userId";
+            int status = this._connection.Execute(query, model, transaction);
+            return status > 0;
+        }
         public bool InsertLikeArtist(LikeArtist model, IDbTransaction transaction = null)
         {
             string insert = "INSERT INTO `user_like_artist`(`userLikeArtistId`, `userId`, `artistId`, `createdAt`) VALUES (null,@userId,@artistId,@createdAt)";
@@ -212,7 +229,12 @@ namespace Muzique_Api.Services
             int status = this._connection.Execute(insert, model, transaction);
             return status > 0;
         }
-
+        public bool DeleteHistoryPlaylist(HistoryPlaylist model, IDbTransaction transaction = null)
+        {
+            string query = "DELETE FROM `user_history_playlist` WHERE playlistId = @playlistId and userId = @userId";
+            int status = this._connection.Execute(query, model, transaction);
+            return status > 0;
+        }
         public bool InsertLikePlaylist(LikePlaylist model, IDbTransaction transaction = null)
         {
             string insert = "INSERT INTO `user_like_playlist`(`userLikePlaylistId`, `userId`, `playlistId`, `createdAt`) VALUES (null,@userId,@playlistId,@createdAt)";

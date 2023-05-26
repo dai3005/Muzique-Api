@@ -62,7 +62,7 @@ namespace Muzique_Api.Controllers
             try
             {
                 if (string.IsNullOrEmpty(model.email) || string.IsNullOrEmpty(model.password)) return StatusCode(500, "Email hoặc mật khẩu rỗng!");
-                if(model.password.Length < 8) return StatusCode(500, "weak-password");
+                if (model.password.Length < 8) return StatusCode(500, "weak-password");
                 UserService userService = new UserService();
                 User userCheck = userService.GetUserByEmail(model.email);
                 if (userCheck != null)
@@ -121,10 +121,11 @@ namespace Muzique_Api.Controllers
         }
 
         [HttpPost("/userUpdate")]
-        [Authorize(Roles ="User")]
+        [Authorize(Roles = "User")]
         public ActionResult UserUpdate(UserUpdate model)
         {
-            try {
+            try
+            {
                 var currentUser = GetCurrentUser();
                 int userId = currentUser.userId;
                 UserService userService = new UserService();
@@ -144,7 +145,7 @@ namespace Muzique_Api.Controllers
                 }
                 return Ok();
             }
-            catch(Exception ex) { return BadRequest(ex); }
+            catch (Exception ex) { return BadRequest(ex); }
         }
 
         [HttpGet("/getUser")]
@@ -167,7 +168,7 @@ namespace Muzique_Api.Controllers
                 List<object> recentArtistIdList = userService.GetListHistoryArtistId(userId);
                 List<object> recentSongIdList = userService.GetListHistorySongId(userId);
 
-                return Ok(new {user,likeAlbumIdList,likeArtistIdList,likePlaylistIdList,likeSongIdList,customizePlaylistIdList,recentSongIdList,recentPlaylistIdList,recentArtistIdList,recentAlbumIdList});
+                return Ok(new { user, likeAlbumIdList, likeArtistIdList, likePlaylistIdList, likeSongIdList, customizePlaylistIdList, recentSongIdList, recentPlaylistIdList, recentArtistIdList, recentAlbumIdList });
             }
             catch (Exception ex)
             {
@@ -176,38 +177,33 @@ namespace Muzique_Api.Controllers
         }
 
         [HttpPost("/insertUserHistory")]
-        [Authorize(Roles ="User")]
+        [Authorize(Roles = "User")]
         public ActionResult InsertUserHistory(HistoryModel model)
         {
-            try {
+            try
+            {
                 var currentUser = GetCurrentUser();
                 int userId = currentUser.userId;
                 UserService userService = new UserService();
-                if(model.type == "Song")
+                if (model.type == "Song")
                 {
                     HistorySong history = new HistorySong();
                     history.songId = model.objectId;
                     history.userId = userId;
                     history.createdAt = DateTime.Now;
 
-                    var songUser = userService.GetHistorySongUser(history);
-                    if (songUser == null)
-                    {
-                        if (!userService.InsertHistorySong(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
-                    }                 
+
+                    if (!userService.InsertHistorySong(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+
                 }
-                if(model.type == "Album")
+                if (model.type == "Album")
                 {
                     HistoryAlbum history = new HistoryAlbum();
                     history.albumId = model.objectId;
                     history.userId = userId;
                     history.createdAt = DateTime.Now;
 
-                    var albumUser = userService.GetHistoryAlbumUser(history);
-                    if (albumUser == null)
-                    {
-                        if (!userService.InsertHistoryAlbum(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
-                    }
+                    if (!userService.InsertHistoryAlbum(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
                 }
                 if (model.type == "Artist")
                 {
@@ -216,11 +212,7 @@ namespace Muzique_Api.Controllers
                     history.userId = userId;
                     history.createdAt = DateTime.Now;
 
-                    var artistUser = userService.GetHistoryArtistUser(history);
-                    if (artistUser == null)
-                    {
-                        if (!userService.InsertHistoryArtist(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
-                    }
+                    if (!userService.InsertHistoryArtist(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
                 }
                 if (model.type == "Playlist")
                 {
@@ -229,13 +221,79 @@ namespace Muzique_Api.Controllers
                     history.userId = userId;
                     history.createdAt = DateTime.Now;
                     var playlistUser = userService.GetHistoryPlaylistUser(history);
-                    if(playlistUser == null) {
-                        if (!userService.InsertHistoryPlaylist(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+
+                    if (!userService.InsertHistoryPlaylist(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+
+                }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost("/deleteUserHistory")]
+        [Authorize(Roles = "User")]
+        public ActionResult DeleteUserHistory(HistoryModel model)
+        {
+            try
+            {
+                var currentUser = GetCurrentUser();
+                int userId = currentUser.userId;
+                UserService userService = new UserService();
+                if (model.type == "Song")
+                {
+                    HistorySong history = new HistorySong();
+                    history.songId = model.objectId;
+                    history.userId = userId;
+
+                    var songUser = userService.GetHistorySongUser(history);
+                    if (songUser != null)
+                    {
+                        if (!userService.DeleteHistorySong(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                    }
+                }
+                if (model.type == "Album")
+                {
+                    HistoryAlbum history = new HistoryAlbum();
+                    history.albumId = model.objectId;
+                    history.userId = userId;
+
+                    var albumUser = userService.GetHistoryAlbumUser(history);
+                    if (albumUser != null)
+                    {
+                        if (!userService.DeleteHistoryAlbum(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                    }
+                }
+                if (model.type == "Artist")
+                {
+                    HistoryArtist history = new HistoryArtist();
+                    history.artistId = model.objectId;
+                    history.userId = userId;
+
+                    var artistUser = userService.GetHistoryArtistUser(history);
+                    if (artistUser != null)
+                    {
+                        if (!userService.DeleteHistoryArtist(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                    }
+                }
+                if (model.type == "Playlist")
+                {
+                    HistoryPlaylist history = new HistoryPlaylist();
+                    history.playlistId = model.objectId;
+                    history.userId = userId;
+                    var playlistUser = userService.GetHistoryPlaylistUser(history);
+                    if (playlistUser != null)
+                    {
+                        if (!userService.DeleteHistoryPlaylist(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
                     }
                 }
 
                 return Ok();
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
@@ -297,7 +355,7 @@ namespace Muzique_Api.Controllers
 
         [HttpPost("/deleteUserLike")]
         [Authorize(Roles = "User")]
-        public ActionResult DeleteUserLike (HistoryModel model)
+        public ActionResult DeleteUserLike(HistoryModel model)
         {
             try
             {
