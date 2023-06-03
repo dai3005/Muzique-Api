@@ -65,6 +65,13 @@ namespace Muzique_Api.Services
             return status > 0;
         }
 
+        public bool ChangePassword(ChangePassword model, IDbTransaction transaction = null)
+        {
+            string query = "UPDATE `user` SET `password`=@newPassword,`updatedAt`=@updatedAt WHERE userId = @userId";
+            int status = this._connection.Execute(query, model , transaction);
+            return status > 0;
+        }
+
         public bool UserUpdateName(UserUpdate model)
         {
             string query = "UPDATE `user` SET `name`=@name,`updatedAt`=@updatedAt," +
@@ -267,6 +274,19 @@ namespace Muzique_Api.Services
             string query = "DELETE FROM `user_like_playlist` WHERE playlistId = @playlistId and userId = @userId";
             int status = this._connection.Execute(query, model, transaction);
             return status > 0;
+        }
+
+        public bool ClearHistoryUser(int userId, IDbTransaction transaction = null)
+        { 
+            string query1 = "DELETE FROM `user_history_playlist` WHERE userId = @userId";
+            string query2 = "DELETE FROM `user_history_song` WHERE userId = @userId";
+            string query3 = "DELETE FROM `user_history_artist` WHERE userId = @userId";
+            string query4 = "DELETE FROM `user_history_album` WHERE userId = @userId";
+            int status1 = this._connection.Execute(query1, new {userId}, transaction);
+            int status2 = this._connection.Execute(query2, new { userId }, transaction);
+            int status3 = this._connection.Execute(query3, new { userId }, transaction);
+            int status4 = this._connection.Execute(query4, new { userId }, transaction);
+            return status1 > 0;
         }
     }
 }

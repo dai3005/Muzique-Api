@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Muzique_Api.Models;
@@ -30,7 +31,7 @@ namespace Muzique_Api.Controllers
             var token = new JwtSecurityToken(_config["Jwt:Issuer"],
                 _config["Jwt:Audience"],
                 claims,
-                expires: DateTime.Now.AddMonths(12),
+                expires: DateTime.Now.AddMonths(1),
                 signingCredentials: credentials);
 
 
@@ -49,6 +50,12 @@ namespace Muzique_Api.Controllers
                 if (model.name == "admin" && model.password == "admin")
                 {
                     var token = GenerateAdminToken(model);
+                    var cookieOpt = new CookieOptions()
+                    {
+                        HttpOnly = false,
+                        Secure = true,
+                    };
+                    Response.Cookies.Append("jwtAdmin", token, cookieOpt);
                     return Ok(token);
                 }
                 else
@@ -60,6 +67,20 @@ namespace Muzique_Api.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("/adminEndPoint")]
+        [Authorize(Roles = "Admin")]
+        public ActionResult AdminEndPoint()
+        {
+            try
+            {
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
             }
         }
     }

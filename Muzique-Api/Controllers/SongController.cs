@@ -23,6 +23,7 @@ namespace Muzique_Api.Controllers
         }
         
         [HttpGet("/getListSong")]
+        [Authorize(Roles = "Admin, User")]
         public IActionResult Get(int page, int rowperpage, string? keyword = "")
         {
             try
@@ -38,6 +39,7 @@ namespace Muzique_Api.Controllers
         }
 
         [HttpGet("/getSongById")]
+        [Authorize(Roles = "Admin, User")]
         public IActionResult GetSongById(int id)
         {
             try
@@ -53,6 +55,7 @@ namespace Muzique_Api.Controllers
         }
 
         [HttpGet("/getSongDetail")]
+        [Authorize(Roles = "Admin, User")]
         public IActionResult GetSongDetail(int id)
         {
             try
@@ -68,6 +71,7 @@ namespace Muzique_Api.Controllers
         }
 
         [HttpPost("/createSong")]
+        [Authorize(Roles = "Admin")]
         public IActionResult Post(SongModel model)
         {
             try
@@ -93,7 +97,7 @@ namespace Muzique_Api.Controllers
 
                         int songId = songService.GetLastSongID(transaction);
 
-                        if (model.listArtist.Length > 0)
+                        if (model.listArtist != null)
                         {
                             foreach (var id in model.listArtist)
                             {
@@ -111,7 +115,7 @@ namespace Muzique_Api.Controllers
                             }
                         }
 
-                        if (model.listPlaylist.Length > 0)
+                        if (model.listPlaylist != null)
                         {
                             foreach (var id in model.listPlaylist)
                             {
@@ -128,7 +132,7 @@ namespace Muzique_Api.Controllers
                             }
                         }
 
-                        if (model.listGenre.Length > 0)
+                        if (model.listGenre != null)
                         {
                             foreach (var id in model.listGenre)
                             {
@@ -158,6 +162,7 @@ namespace Muzique_Api.Controllers
         }
 
         [HttpPut("/updateSong")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateSong(SongModel model)
         {
             try
@@ -294,8 +299,8 @@ namespace Muzique_Api.Controllers
             }
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpDelete("/deleteSong")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             try

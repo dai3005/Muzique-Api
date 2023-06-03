@@ -83,7 +83,7 @@ namespace Muzique_Api.Controllers
                 playlist.description = model.description;
                 playlist.coverImageUrl = model.coverImageUrl;
                 playlist.createdAt = DateTime.Now;
-                playlist.type = model.type;
+                playlist.type = "system";
 
                 if (!playlistService.InsertPlaylist(playlist)) return StatusCode(500, "Lỗi khi thêm Playlist");
                 return Ok();

@@ -21,6 +21,13 @@
         public DateTime? updatedAt { get; set; }
     }
 
+    public class ChangePassword
+    {
+        public int? userId { get; set; }
+        public string oldPassword { get; set; }
+        public string newPassword { get; set; }
+        public DateTime? updatedAt { get; set; }
+    }
     public class UserViewModel
     {
         public List<User> ListData { get; set; }

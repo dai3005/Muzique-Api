@@ -120,6 +120,45 @@ namespace Muzique_Api.Controllers
             }
         }
 
+        [HttpPost("/changePassword")]
+        [Authorize(Roles ="User")]
+        public ActionResult ChangePassword(ChangePassword model)
+        {
+            try
+            {
+                var currentUser = GetCurrentUser();
+                int userId = currentUser.userId;
+                if (string.IsNullOrEmpty(model.oldPassword) || string.IsNullOrEmpty(model.newPassword)) return StatusCode(500, "Password Error");
+                if (model.newPassword.Length < 8) return StatusCode(500, "Weak-password");
+                UserService userService = new UserService();
+                User user = userService.GetUserById(userId);
+                if (user != null)
+                {
+                    if (!user.password.Equals(model.oldPassword)) return StatusCode(500, "Old Password is not correct");
+                    else
+                    {
+                        ChangePassword change = new ChangePassword();
+                        change.userId = userId;
+                        change.newPassword = model.newPassword;
+                        change.updatedAt = DateTime.Now;
+
+                        if (!userService.ChangePassword(change)) return StatusCode(500, "Change Password Error");
+                        return Ok();
+                    }                  
+                }
+                else
+                {
+                    return NotFound("Không tìm thấy tài khoản");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
         [HttpPost("/userUpdate")]
         [Authorize(Roles = "User")]
         public ActionResult UserUpdate(UserUpdate model)
@@ -251,7 +290,7 @@ namespace Muzique_Api.Controllers
                     var songUser = userService.GetHistorySongUser(history);
                     if (songUser != null)
                     {
-                        if (!userService.DeleteHistorySong(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                        if (!userService.DeleteHistorySong(history)) return StatusCode(500, "Lỗi khi xoá khỏi lịch sử xem");
                     }
                 }
                 if (model.type == "Album")
@@ -263,7 +302,7 @@ namespace Muzique_Api.Controllers
                     var albumUser = userService.GetHistoryAlbumUser(history);
                     if (albumUser != null)
                     {
-                        if (!userService.DeleteHistoryAlbum(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                        if (!userService.DeleteHistoryAlbum(history)) return StatusCode(500, "Lỗi khi xoá khỏi lịch sử xem");
                     }
                 }
                 if (model.type == "Artist")
@@ -275,7 +314,7 @@ namespace Muzique_Api.Controllers
                     var artistUser = userService.GetHistoryArtistUser(history);
                     if (artistUser != null)
                     {
-                        if (!userService.DeleteHistoryArtist(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                        if (!userService.DeleteHistoryArtist(history)) return StatusCode(500, "Lỗi khi xoá khỏi lịch sử xem");
                     }
                 }
                 if (model.type == "Playlist")
@@ -286,9 +325,29 @@ namespace Muzique_Api.Controllers
                     var playlistUser = userService.GetHistoryPlaylistUser(history);
                     if (playlistUser != null)
                     {
-                        if (!userService.DeleteHistoryPlaylist(history)) return StatusCode(500, "Lỗi khi thêm vào lịch sử xem");
+                        if (!userService.DeleteHistoryPlaylist(history)) return StatusCode(500, "Lỗi khi xoá khỏi lịch sử xem");
                     }
                 }
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("/clearUserHistory")]
+        [Authorize(Roles = "User")]
+        public ActionResult ClearUserHistory()
+        {
+            try
+            {
+                var currentUser = GetCurrentUser();
+                int userId = currentUser.userId;
+                UserService userService = new UserService();
+
+                userService.ClearHistoryUser(userId);
 
                 return Ok();
             }
@@ -406,7 +465,7 @@ namespace Muzique_Api.Controllers
             }
         }
 
-        [HttpPut("/updateUserPlaylist")]
+        [HttpPost("/updateUserPlaylist")]
         [Authorize(Roles = "User")]
         public ActionResult UpdateUserPlaylist(Playlist model)
         {
@@ -467,6 +526,7 @@ namespace Muzique_Api.Controllers
         }
 
         [HttpGet("/userSearch")]
+        [Authorize(Roles = "User")]
         public IActionResult UserSearch(string keyword)
         {
             try
