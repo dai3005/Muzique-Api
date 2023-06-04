@@ -16,9 +16,11 @@ namespace Muzique_Api.Controllers
     public class UserController : ControllerBase
     {
         private readonly IConfiguration _config;
+        private SendEmail _sendEmail;
         public UserController(IConfiguration config)
         {
             _config = config;
+            _sendEmail = new SendEmail();
         }
         private string GenerateToken(User user)
         {
@@ -158,6 +160,31 @@ namespace Muzique_Api.Controllers
             }
         }
 
+        [HttpPost("/resetPassword")]
+        public async Task<IActionResult> ResetPassword(UserEmail model)
+        {
+            try
+            {
+                UserService userService = new UserService();
+                User user = userService.GetUserByEmail(model.email);
+                if (user != null)
+                {
+                    ChangePassword change = new ChangePassword();
+                    change.userId = user.userId;
+                    change.newPassword = Helper.RandomString(8);
+                    change.updatedAt = DateTime.Now;
+                    if (!userService.ChangePassword(change)) return StatusCode(500, "Reset Password Error");
+                    await _sendEmail.SendEmailAsync(user.email,"New Password: " + change.newPassword);
+                    return Ok();
+                }
+                else
+                {
+                    return NotFound("Account not found");
+                }            
+            }
+            catch (Exception ex)
+            { return BadRequest(ex); }
+        }
 
         [HttpPost("/userUpdate")]
         [Authorize(Roles = "User")]
@@ -579,5 +606,7 @@ namespace Muzique_Api.Controllers
                 return BadRequest(ex);
             }
         }
+        
+        
     }
 }

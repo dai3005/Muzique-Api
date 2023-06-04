@@ -12,6 +12,12 @@
         public DateTime? updatedAt { get;set; }
     }
 
+    public class UserEmail
+    {
+        public string email { get; set; }
+
+    }
+
     public class UserUpdate
     {
         public int userId { get; set; }

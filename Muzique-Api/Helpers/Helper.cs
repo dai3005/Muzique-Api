@@ -25,35 +25,18 @@
             }
             return text;
         }
-    }
 
-    public class Base64Converter
-    {
-        public static IFormFile ConvertToIFormFile(string base64String, string fileName)
+        private static Random random = new Random();
+        public static string RandomString(int length)
         {
-            byte[] bytes = Convert.FromBase64String(base64String);
-
-            // Create a temporary file path to save the byte array
-            string tempFilePath = Path.GetTempFileName();
-
-            try
-            {
-                // Write the byte array to the temporary file
-                File.WriteAllBytes(tempFilePath, bytes);
-
-                // Open a file stream to the temporary file
-                FileStream fileStream = new FileStream(tempFilePath, FileMode.Open);
-
-                // Create an IFormFile instance from the file stream
-                IFormFile formFile = new FormFile(fileStream, 0, bytes.Length, null, fileName);
-
-                return formFile;
-            }
-            finally
-            {
-                // Clean up by deleting the temporary file
-                File.Delete(tempFilePath);
-            }
+            const string pool = "abcdefghijklmnopqrstuvwxyz0123456789";
+            var chars = Enumerable.Range(0, length)
+                .Select(x => pool[random.Next(0, pool.Length)]);
+            return new string(chars.ToArray());
         }
+
+
     }
+    
+
 }

@@ -110,7 +110,6 @@ namespace Muzique_Api.Controllers
                 album.description = model.description;
                 album.updatedAt = DateTime.Now;
                 album.artistId = model.artistId;
-                album.coverImageUrl = model.coverImageUrl;
 
                 if (!string.IsNullOrEmpty(model.coverImageUrl))
                 {
